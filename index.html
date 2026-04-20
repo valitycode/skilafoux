@@ -834,25 +834,56 @@ const DEFAULT={
     {id:5,nom:"Télécabine Panorama",type:"télécabine",places:8,vitesse:0,capa:0,open:false,note:"Maintenance"}
   ],
   actualites:[
-    {id:1,titre:"Fermeture de la route",categorie:"alerte",resume:"Fermeture entre Barrême et La Foux de 15h00 à 18h00.",contenu:"Fermeture entre Barrême et La Foux de 15h00 à 18h00. \nDes camions pour la constructions de nouveaux télésieges sont en train de monter. \nLa construction commencera dès aujourd'hui une fois les camions arrivé. \n Meci de bien vouloir respecter les conditions et de vous déplacer qu'après 18h.\n Les prochains transport se feront la nuit.",date:"20 Avril 2026",auteur:"Direction",publie:true},
-    {id:2,titre:"Reconstruction de la station",categorie:"info",resume:"La reconstruction de la station débute le 20/04/2026",contenu:"Suite à l'annonce des JO, la Foux d'Allos se doit de reconstruire presque intégralement la station !\n La station comme vous l'avez remarqué à fermer plus tôt pour être prêt pour 2030.\n Depuis le 15/03/2025, les ouvriers travaillent sans relâche. En effet nous avons demonté tous les télésièges sauf le Marin Pascal. Nous avons reçu aujourd'hui les nouveaux télésièges qui sont en train d'être construits. Nous attaquons avec les nouveaux télésièges de l'aiguille, la chaup et l'observatoire !\n Dans la nuit nous serons en train d'être livrés. 4 télésièges seront construits demain ! Ces télésièges ne sont pas visibles depuis la station alors nous vous gardons la surprise !\n\n Merci aux JO de nous faire confiance et à vous aussi. Sans vous cela serait impossible. C'est pour cela que nous ouvrirons l'année prochaine la station gratuitement pendant une semaine ! \nPar souci d'équité nous ne le ferons pas pendant les vacances.\n Nous vous informerons dans la catégorie 'évènement' très bientôt.\n\nMerci de nous soutenir, vous ne serez pas déçu.\n Une nouvelle aventure commence pour nous !\n\n L'équipe Val d'Allos.",date:"20 Avril 2026",auteur:"Direction",publie:true},
+    {id:1,titre:"Ouverture de la saison — Conditions exceptionnelles",categorie:"info",resume:"La saison 2024-25 débute dans des conditions idéales avec 185cm de neige au sommet et des températures parfaites.",contenu:"La saison 2024-25 s'ouvre dans des conditions exceptionnelles. Après des chutes de neige abondantes, le domaine skiable affiche un enneigement record de 185cm au sommet. Les équipes ont travaillé toute la nuit pour garantir des pistes parfaites.",date:"15 Décembre 2024",auteur:"Direction",publie:true},
+    {id:2,titre:"Compétition de ski alpin — Coupe Régionale",categorie:"competition",resume:"Le 20 janvier, notre station accueille la Coupe Régionale de ski alpin. Venez encourager les compétiteurs !",contenu:"Notre station accueille la Coupe Régionale de ski alpin le samedi 20 janvier 2025 sur la piste rouge 'Face Nord' avec des épreuves de slalom géant dès 9h00.\n\nLa journée sera animée par un village exposants au pied des pistes. Entrée gratuite.",date:"10 Janvier 2025",auteur:"Service Événements",publie:true},
+    {id:3,titre:"Travaux Télésiège Aiglon — Fermeture matin",categorie:"travaux",resume:"Le télésiège Aiglon sera fermé les lundis et mardis matin pour révision. Ouverture à 10h ces jours-là.",contenu:"Le télésiège Aiglon sera soumis à des travaux de révision chaque lundi et mardi matin de 8h à 10h jusqu'au 15 février.\n\nLa télécabine des Sommets sera renforcée pendant cette période. Nous nous excusons pour la gêne.",date:"8 Janvier 2025",auteur:"Service Technique",publie:true}
   ]
 };
 
 let pisteFilter='',actuFilter='';
 
-function loadState(){
-  const d=localStorage.getItem(SKEY);
-  try{ S=d?JSON.parse(d):JSON.parse(JSON.stringify(DEFAULT)); }
-  catch{ S=JSON.parse(JSON.stringify(DEFAULT)); }
-  // Migration : garantir tous les champs
-  if(!S.actualites)  S.actualites  = JSON.parse(JSON.stringify(DEFAULT.actualites));
-  if(!S.pistes)      S.pistes      = JSON.parse(JSON.stringify(DEFAULT.pistes));
-  if(!S.remontees)   S.remontees   = JSON.parse(JSON.stringify(DEFAULT.remontees));
-  if(!S.meteo)       S.meteo       = JSON.parse(JSON.stringify(DEFAULT.meteo));
-  if(!S.station)     S.station     = JSON.parse(JSON.stringify(DEFAULT.station));
-  if(!S.station.tarifs) S.station.tarifs={adulte:42,enfant:28,semA:210,semE:148};
-  if(!S.meteo.previsions) S.meteo.previsions=JSON.parse(JSON.stringify(DEFAULT.meteo.previsions));
+const LKEY_BIN='alpineOS_binId';
+const LKEY_KEY='alpineOS_apiKey';
+const HARDCODED_BIN='69e68a72aaba8821971d3635';
+const HARDCODED_KEY='$2a$10$S5RnHtKzu4ehuDZA9Mvnpu4gAVu520dFrKFDMtwXU71RZ67tQ3yCe';
+function getBinId(){return localStorage.getItem(LKEY_BIN)||HARDCODED_BIN;}
+function getApiKey(){return localStorage.getItem(LKEY_KEY)||HARDCODED_KEY;}
+
+function migrateState(obj){
+  if(!obj.actualites)  obj.actualites  = JSON.parse(JSON.stringify(DEFAULT.actualites));
+  if(!obj.pistes)      obj.pistes      = JSON.parse(JSON.stringify(DEFAULT.pistes));
+  if(!obj.remontees)   obj.remontees   = JSON.parse(JSON.stringify(DEFAULT.remontees));
+  if(!obj.meteo)       obj.meteo       = JSON.parse(JSON.stringify(DEFAULT.meteo));
+  if(!obj.station)     obj.station     = JSON.parse(JSON.stringify(DEFAULT.station));
+  if(!obj.station.tarifs) obj.station.tarifs={adulte:42,enfant:28,semA:210,semE:148};
+  if(!obj.meteo.previsions) obj.meteo.previsions=JSON.parse(JSON.stringify(DEFAULT.meteo.previsions));
+  return obj;
+}
+
+async function loadState(){
+  const binId=getBinId(),apiKey=getApiKey();
+  if(!binId||!apiKey){
+    // Pas de config JSONBin : fallback localStorage (données locales ou défaut)
+    const d=localStorage.getItem(SKEY);
+    try{S=d?JSON.parse(d):JSON.parse(JSON.stringify(DEFAULT));}
+    catch{S=JSON.parse(JSON.stringify(DEFAULT));}
+    migrateState(S);return;
+  }
+  try{
+    const res=await fetch('https://api.jsonbin.io/v3/b/'+binId+'/latest',{
+      headers:{'X-Master-Key':apiKey,'X-Bin-Meta':'false'}
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    S=migrateState(data);
+    localStorage.setItem(SKEY,JSON.stringify(S));
+  }catch(e){
+    // Fallback cache local
+    const d=localStorage.getItem(SKEY);
+    try{S=d?JSON.parse(d):JSON.parse(JSON.stringify(DEFAULT));}
+    catch{S=JSON.parse(JSON.stringify(DEFAULT));}
+    migrateState(S);
+  }
 }
 
 // CLOCK
@@ -1028,10 +1059,17 @@ function sendContact(){
 function kpiBox(ico,lbl,val,unit,dc){return`<div class="kpi-box"><div class="kb-ico">${ico}</div><div class="kb-val">${val}<span class="kb-unit">${unit||''}</span></div><div class="kb-lbl">${lbl}</div></div>`;}
 
 // BOOT
-loadState();
-renderAccueil();
-// Auto-refresh from localStorage every 15s (picks up admin changes)
-setInterval(()=>{loadState();const active=document.querySelector('.page.active');if(active)renderPage(active.id.replace('page-',''));},15000);
+(async()=>{
+  await loadState();
+  renderAccueil();
+  document.getElementById('bn-accueil').classList.add('active');
+})();
+// Auto-refresh JSONBin toutes les 20s pour voir les mises à jour de l'admin
+setInterval(async()=>{
+  await loadState();
+  const active=document.querySelector('.page.active');
+  if(active)renderPage(active.id.replace('page-',''));
+},20000);
 </script>
 </body>
 </html>
