@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AlpineOS">
+<meta name="theme-color" content="#0d2240">
+<meta name="mobile-web-app-capable" content="yes">
+<title id="pageTitle">Station de Ski</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#ffffff;--off:#f7f9fc;--light:#edf2f9;--mid:#cddaed;
+  --steel:#7a95b8;--slate:#4a647e;--navy:#1a3a5c;--deep:#0d2240;
+  --blue:#1460cc;--azure:#2980ff;--sky:#5ba8ff;--ice:#c8e0ff;
+  --snow:#e8f4ff;--peak:#0a1e35;
+  --go:#16a34a;--warn:#d97706;--alert:#dc2626;--gold:#b8860b;
+  --shadow:0 4px 24px rgba(20,60,120,0.10);
+  --shadow-lg:0 8px 40px rgba(20,60,120,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--white);color:var(--navy);overflow-x:hidden;}
+
+/* ═══════ SCROLL BAR ═══════ */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--light);}
+::-webkit-scrollbar-thumb{background:var(--azure);border-radius:3px;}
+
+/* ═══════ TOPBAR ═══════ */
+.topbar{background:var(--deep);color:rgba(255,255,255,.7);font-size:12px;padding:6px 0;overflow:hidden;}
+.topbar-inner{display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:0 auto;padding:0 24px;}
+.topbar-ticker{display:flex;gap:24px;align-items:center;}
+.topbar-right{display:flex;gap:16px;align-items:center;}
+.topbar a{color:rgba(255,255,255,.6);text-decoration:none;}
+.topbar a:hover{color:#fff;}
+
+/* ═══════ NAV ═══════ */
+.navbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--mid);box-shadow:0 1px 12px rgba(20,60,120,.07);}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:68px;}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.nav-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--azure),var(--blue));clip-path:polygon(50% 0%,100% 100%,0% 100%);flex-shrink:0;}
+.nav-logo-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--deep);letter-spacing:-.3px;}
+.nav-logo-sub{font-size:10px;color:var(--steel);letter-spacing:2px;text-transform:uppercase;margin-top:-2px;}
+.nav-links{display:flex;align-items:center;gap:4px;}
+.nav-link{padding:8px 14px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;color:var(--slate);transition:all .18s;cursor:pointer;}
+.nav-link:hover{background:var(--snow);color:var(--blue);}
+.nav-link.active{background:var(--snow);color:var(--blue);font-weight:600;}
+.nav-cta{background:linear-gradient(135deg,var(--azure),var(--blue));color:#fff;padding:9px 20px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:600;transition:all .2s;box-shadow:0 2px 12px rgba(41,128,255,.25);}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(41,128,255,.35);}
+
+/* ═══════ PAGES ═══════ */
+.page{display:none;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.page.active .fadein{animation:fadeUp .4s ease both;}
+.page.active .fadein:nth-child(1){animation-delay:0ms;}
+.page.active .fadein:nth-child(2){animation-delay:60ms;}
+.page.active .fadein:nth-child(3){animation-delay:120ms;}
+.page.active .fadein:nth-child(4){animation-delay:180ms;}
+.page.active .fadein:nth-child(5){animation-delay:240ms;}
+
+/* ═══════ HERO ═══════ */
+.hero{position:relative;min-height:85vh;display:flex;align-items:center;overflow:hidden;background:linear-gradient(160deg,#0d2240 0%,#1a3a6c 40%,#1460cc 100%);}
+.hero-mountains{position:absolute;inset:0;pointer-events:none;}
+.hero-mountains svg{position:absolute;bottom:0;width:100%;}
+.hero-snow{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.hero-snow span{position:absolute;top:-10px;border-radius:50%;background:rgba(255,255,255,.7);animation:herofall linear infinite;}
+@keyframes herofall{to{transform:translateY(100vh) translateX(15px);opacity:0;}}
+.hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 24px;padding-top:40px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:30px;padding:6px 16px;font-size:12px;color:rgba(255,255,255,.85);letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;}
+.hero-badge span{width:7px;height:7px;background:var(--go);border-radius:50%;box-shadow:0 0 6px var(--go);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(42px,7vw,80px);font-weight:800;color:#fff;line-height:1.05;margin-bottom:16px;}
+.hero-title span{color:var(--sky);}
+.hero-sub{font-size:18px;color:rgba(255,255,255,.75);font-weight:300;max-width:520px;margin-bottom:36px;line-height:1.6;}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;}
+.hero-btn-p{background:#fff;color:var(--blue);padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;text-decoration:none;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.15);cursor:pointer;}
+.hero-btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.2);}
+.hero-btn-g{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;text-decoration:none;transition:all .2s;cursor:pointer;backdrop-filter:blur(8px);}
+.hero-btn-g:hover{background:rgba(255,255,255,.2);}
+.hero-stats{display:flex;gap:0;margin-top:60px;background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.15);border-radius:16px;overflow:hidden;max-width:700px;}
+.hero-stat{flex:1;padding:18px 20px;border-right:1px solid rgba(255,255,255,.1);text-align:center;}
+.hero-stat:last-child{border-right:none;}
+.hstat-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;color:#fff;margin-bottom:3px;}
+.hstat-lbl{font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1.5px;}
+
+/* ═══════ WEATHER BANNER ═══════ */
+.wx-banner{background:var(--deep);color:#fff;padding:16px 0;}
+.wx-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.wx-item{display:flex;align-items:center;gap:8px;font-size:14px;}
+.wx-item .ico{font-size:18px;}
+.wx-item .val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:500;color:var(--sky);}
+.wx-item .lbl{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;}
+.wx-sep{width:1px;height:30px;background:rgba(255,255,255,.12);}
+.wx-qual{background:linear-gradient(135deg,rgba(41,128,255,.2),rgba(91,168,255,.15));border:1px solid rgba(91,168,255,.3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--sky);}
+
+/* ═══════ SECTION ═══════ */
+.section{padding:72px 0;}
+.section-alt{background:var(--off);}
+.container{max-width:1200px;margin:0 auto;padding:0 24px;}
+.section-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--azure);background:var(--snow);border:1px solid var(--ice);border-radius:20px;padding:5px 14px;margin-bottom:14px;}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,40px);font-weight:700;color:var(--deep);margin-bottom:10px;line-height:1.15;}
+.section-sub{font-size:16px;color:var(--slate);font-weight:300;max-width:540px;line-height:1.6;}
+
+/* ═══════ KPI GRID ═══════ */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:48px;}
+.kpi-box{background:var(--white);border:1px solid var(--mid);border-radius:14px;padding:20px;transition:all .2s;box-shadow:var(--shadow);}
+.kpi-box:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--sky);}
+.kb-ico{font-size:28px;margin-bottom:10px;}
+.kb-val{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:500;color:var(--deep);line-height:1;}
+.kb-unit{font-family:'Outfit',sans-serif;font-size:14px;color:var(--steel);}
+.kb-lbl{font-size:12px;color:var(--steel);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.kb-delta{font-size:12px;font-weight:600;margin-top:6px;}
+.kb-delta.up{color:var(--go);}
+.kb-delta.dn{color:var(--alert);}
+.kb-delta.nu{color:var(--steel);}
+
+/* ═══════ PISTE CARDS ═══════ */
+.piste-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.piste-card{background:var(--white);border:1px solid var(--mid);border-radius:14px;overflow:hidden;transition:all .2s;box-shadow:var(--shadow);}
+.piste-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.piste-stripe{height:4px;}
+.piste-body{padding:16px;}
+.piste-name{font-size:15px;font-weight:600;color:var(--deep);margin-bottom:4px;}
+.piste-meta{font-size:12px;color:var(--steel);margin-bottom:10px;display:flex;gap:12px;}
+.piste-snow{margin-bottom:10px;}
+.piste-snow-lbl{font-size:11px;color:var(--steel);margin-bottom:4px;}
+.piste-snow-bar{height:5px;background:var(--light);border-radius:3px;overflow:hidden;}
+.piste-snow-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--azure),var(--sky));transition:width .6s;}
+.status-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.st-open{background:#dcfce7;color:var(--go);border:1px solid #bbf7d0;}
+.st-closed{background:#fee2e2;color:var(--alert);border:1px solid #fecaca;}
+.st-prep{background:#fef3c7;color:var(--warn);border:1px solid #fde68a;}
+.diff-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;}
+.diff-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ═══════ LIFT CARDS ═══════ */
+.lift-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.lift-card{background:var(--white);border:1px solid var(--mid);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;transition:all .2s;box-shadow:var(--shadow);}
+.lift-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+.lift-ico{width:44px;height:44px;background:var(--snow);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.lift-info{flex:1;}
+.lift-name{font-size:14px;font-weight:600;color:var(--deep);}
+.lift-meta{font-size:12px;color:var(--steel);margin-top:2px;}
+.lift-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.lb-open{background:#dcfce7;color:var(--go);}
+.lb-closed{background:#fee2e2;color:var(--alert);}
+.lb-maint{background:#fef3c7;color:var(--warn);}
+.lift-capa{text-align:right;}
+.lc-num{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--blue);}
+.lc-lbl{font-size:10px;color:var(--steel);text-transform:uppercase;letter-spacing:1px;}
+
+/* ═══════ FORECAST ═══════ */
+.forecast-strip{display:flex;gap:10px;}
+.fc-day{flex:1;background:var(--white);border:1px solid var(--mid);border-radius:14px;padding:18px 12px;text-align:center;transition:all .2s;box-shadow:var(--shadow);}
+.fc-day:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.fc-day.today{background:var(--deep);border-color:var(--deep);color:#fff;}
+.fc-dow{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--steel);margin-bottom:8px;}
+.fc-day.today .fc-dow{color:rgba(255,255,255,.6);}
+.fc-ico{font-size:28px;margin-bottom:8px;}
+.fc-temp{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--deep);margin-bottom:2px;}
+.fc-day.today .fc-temp{color:#fff;}
+.fc-min{font-size:12px;color:var(--steel);margin-bottom:6px;}
+.fc-day.today .fc-min{color:rgba(255,255,255,.5);}
+.fc-snow{font-size:11px;color:var(--azure);font-weight:600;}
+.fc-day.today .fc-snow{color:var(--sky);}
+
+/* ═══════ TARIFS ═══════ */
+.tarif-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.tarif-card{background:var(--white);border:1px solid var(--mid);border-radius:16px;padding:28px 20px;text-align:center;transition:all .2s;box-shadow:var(--shadow);position:relative;}
+.tarif-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.tarif-card.featured{background:linear-gradient(145deg,var(--deep),var(--navy));border-color:transparent;color:#fff;}
+.tarif-card.featured::before{content:'⭐ Populaire';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--azure),var(--blue));color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;}
+.tarif-ico{font-size:32px;margin-bottom:10px;}
+.tarif-name{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--steel);margin-bottom:16px;}
+.tarif-card.featured .tarif-name{color:rgba(255,255,255,.6);}
+.tarif-price{font-family:'JetBrains Mono',monospace;font-size:40px;font-weight:500;color:var(--deep);line-height:1;}
+.tarif-card.featured .tarif-price{color:#fff;}
+.tarif-eu{font-size:20px;vertical-align:top;margin-top:6px;display:inline-block;}
+.tarif-per{font-size:12px;color:var(--steel);margin-top:4px;}
+.tarif-card.featured .tarif-per{color:rgba(255,255,255,.5);}
+.tarif-features{margin-top:18px;display:flex;flex-direction:column;gap:6px;text-align:left;}
+.tarif-feat{font-size:12px;color:var(--slate);display:flex;align-items:center;gap:6px;}
+.tarif-card.featured .tarif-feat{color:rgba(255,255,255,.7);}
+.tarif-btn{display:block;margin-top:20px;background:var(--azure);color:#fff;padding:10px;border-radius:10px;font-size:14px;font-weight:600;text-align:center;text-decoration:none;transition:all .2s;border:none;cursor:pointer;width:100%;}
+.tarif-btn:hover{background:var(--blue);transform:translateY(-1px);}
+.tarif-card.featured .tarif-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);}
+.tarif-card.featured .tarif-btn:hover{background:rgba(255,255,255,.25);}
+
+/* ═══════ ACTUALITÉS ═══════ */
+.actu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.actu-card{background:var(--white);border:1px solid var(--mid);border-radius:16px;overflow:hidden;transition:all .2s;box-shadow:var(--shadow);display:flex;flex-direction:column;}
+.actu-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--sky);}
+.actu-top{padding:20px 20px 0;}
+.actu-cat{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-bottom:10px;}
+.ac-evenement{background:#dbeafe;color:#1d4ed8;}
+.ac-alerte{background:#fee2e2;color:#dc2626;}
+.ac-info{background:#dcfce7;color:#16a34a;}
+.ac-travaux{background:#fef3c7;color:#d97706;}
+.ac-competition{background:#fef9c3;color:#92400e;}
+.actu-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--deep);line-height:1.3;margin-bottom:8px;}
+.actu-meta{font-size:12px;color:var(--steel);margin-bottom:0;}
+.actu-resume{padding:12px 20px 16px;font-size:13px;color:var(--slate);line-height:1.65;flex:1;}
+.actu-footer{padding:12px 20px;border-top:1px solid var(--light);display:flex;align-items:center;justify-content:space-between;}
+.actu-read{font-size:12px;font-weight:600;color:var(--azure);cursor:pointer;background:none;border:none;padding:0;}
+.actu-read:hover{text-decoration:underline;}
+
+/* ═══════ CONDITIONS ═══════ */
+.cond-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.cond-card{background:var(--white);border:1px solid var(--mid);border-radius:14px;padding:20px;text-align:center;transition:all .2s;box-shadow:var(--shadow);}
+.cond-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+.cond-ico{font-size:36px;margin-bottom:10px;}
+.cond-val{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:500;color:var(--deep);margin-bottom:4px;}
+.cond-lbl{font-size:12px;color:var(--steel);text-transform:uppercase;letter-spacing:1px;}
+.cond-sub{font-size:12px;color:var(--slate);margin-top:6px;}
+
+/* ═══════ SNOW QUALITY BADGE ═══════ */
+.quality-section{background:linear-gradient(135deg,var(--deep) 0%,var(--navy) 100%);border-radius:20px;padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin-top:32px;}
+.qs-left .qs-tag{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--sky);margin-bottom:10px;}
+.qs-left h3{font-family:'Playfair Display',serif;font-size:28px;color:#fff;margin-bottom:8px;}
+.qs-left p{font-size:14px;color:rgba(255,255,255,.65);line-height:1.6;}
+.qs-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.qs-stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;}
+.qs-stat-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;color:#fff;}
+.qs-stat-lbl{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+/* ═══════ CONTACT ═══════ */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}
+.contact-info{display:flex;flex-direction:column;gap:20px;}
+.ci-item{display:flex;align-items:flex-start;gap:14px;padding:18px;background:var(--white);border:1px solid var(--mid);border-radius:12px;box-shadow:var(--shadow);}
+.ci-ico{width:42px;height:42px;background:var(--snow);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ci-title{font-size:14px;font-weight:600;color:var(--deep);margin-bottom:3px;}
+.ci-val{font-size:13px;color:var(--slate);line-height:1.5;}
+.contact-form{background:var(--white);border:1px solid var(--mid);border-radius:16px;padding:28px;box-shadow:var(--shadow);}
+.cf-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--deep);margin-bottom:20px;}
+.cf-row{margin-bottom:16px;}
+.cf-label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--slate);margin-bottom:6px;}
+.cf-input{width:100%;border:1px solid var(--mid);border-radius:8px;padding:10px 14px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--deep);outline:none;transition:border-color .18s;background:var(--white);}
+.cf-input:focus{border-color:var(--azure);}
+textarea.cf-input{resize:vertical;min-height:100px;}
+.cf-btn{background:linear-gradient(135deg,var(--azure),var(--blue));color:#fff;border:none;border-radius:10px;padding:12px 24px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;cursor:pointer;width:100%;transition:all .2s;box-shadow:0 2px 12px rgba(41,128,255,.25);}
+.cf-btn:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(41,128,255,.35);}
+
+/* ═══════ ARTICLE MODAL ═══════ */
+.article-overlay{position:fixed;inset:0;background:rgba(10,30,60,.6);backdrop-filter:blur(8px);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.article-overlay.show{opacity:1;pointer-events:all;}
+.article-modal{background:var(--white);border-radius:20px;width:680px;max-width:96vw;max-height:88vh;overflow-y:auto;transform:scale(.96) translateY(8px);transition:transform .25s;}
+.article-overlay.show .article-modal{transform:scale(1) translateY(0);}
+.article-modal-top{position:sticky;top:0;background:var(--white);border-bottom:1px solid var(--light);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;z-index:2;}
+.am-close{background:var(--light);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;color:var(--slate);transition:all .18s;}
+.am-close:hover{background:var(--mid);color:var(--deep);}
+.article-modal-body{padding:28px;}
+.am-cat{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-bottom:14px;}
+.am-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--deep);line-height:1.25;margin-bottom:10px;}
+.am-meta{font-size:13px;color:var(--steel);margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--light);}
+.am-content{font-size:15px;color:var(--slate);line-height:1.8;white-space:pre-line;}
+
+/* ═══════ FOOTER ═══════ */
+.footer{background:var(--peak);color:rgba(255,255,255,.65);padding:60px 0 30px;padding-bottom:calc(30px + env(safe-area-inset-bottom));}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;}
+.footer-brand .logo-name{font-family:'Playfair Display',serif;font-size:22px;color:#fff;font-weight:700;margin-bottom:10px;}
+.footer-brand p{font-size:13px;line-height:1.7;color:rgba(255,255,255,.5);max-width:240px;}
+.footer-col h4{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.85);margin-bottom:16px;}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);text-decoration:none;margin-bottom:8px;transition:color .18s;cursor:pointer;}
+.footer-col a:hover{color:var(--sky);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:24px;display:flex;justify-content:space-between;align-items:center;font-size:12px;}
+.footer-bottom span{color:rgba(255,255,255,.35);}
+
+/* ═══════ BOTTOM NAV MOBILE ═══════ */
+.bottom-nav{
+  display:none;
+  position:fixed;
+  bottom:0; left:0; right:0;
+  background:rgba(255,255,255,0.97);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--mid);
+  box-shadow:0 -4px 20px rgba(20,60,120,.1);
+  z-index:200;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.bottom-nav-inner{
+  display:flex;
+  align-items:stretch;
+  height:56px;
+}
+.bn-item{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  cursor:pointer;
+  transition:all .18s;
+  border:none;
+  background:none;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.bn-item.active .bn-ico{color:var(--blue);}
+.bn-item.active .bn-lbl{color:var(--blue);font-weight:600;}
+.bn-item.active::before{
+  content:'';
+  position:absolute;
+  top:0; left:20%; right:20%;
+  height:2px;
+  background:var(--azure);
+  border-radius:0 0 3px 3px;
+}
+.bn-ico{font-size:20px;line-height:1;color:var(--steel);transition:color .18s;}
+.bn-lbl{font-size:10px;color:var(--steel);letter-spacing:.3px;transition:color .18s;}
+.bn-forfait{
+  background:linear-gradient(135deg,var(--azure),var(--blue));
+  border-radius:14px;
+  margin:8px 4px;
+  flex:1.2;
+}
+.bn-forfait .bn-ico{color:#fff;}
+.bn-forfait .bn-lbl{color:rgba(255,255,255,.85);}
+.bn-forfait.active::before{display:none;}
+
+/* ═══════ MOBILE OVERRIDES ═══════ */
+@media(max-width:430px){
+  /* Show bottom nav, hide desktop nav */
+  .bottom-nav{display:block;}
+  .navbar .nav-links,.navbar .nav-cta{display:none;}
+  .topbar{display:none;}
+
+  /* Body padding for bottom nav + safe area */
+  body{padding-bottom:calc(56px + env(safe-area-inset-bottom));}
+
+  /* Hero */
+  .hero{min-height:70vh;padding-top:env(safe-area-inset-top);}
+  .hero-title{font-size:36px;}
+  .hero-sub{font-size:15px;}
+  .hero-btns{flex-direction:column;}
+  .hero-btn-p,.hero-btn-g{text-align:center;padding:13px 20px;}
+  .hero-stats{flex-wrap:wrap;max-width:100%;}
+  .hero-stat{min-width:50%;border-bottom:1px solid rgba(255,255,255,.1);}
+  .hero-stat:nth-child(odd){border-right:1px solid rgba(255,255,255,.1);}
+  .hero-stat:nth-child(3),.hero-stat:nth-child(4){border-bottom:none;}
+
+  /* Navbar compact */
+  .nav-inner{padding:0 16px;}
+  .nav-logo-name{font-size:17px;}
+
+  /* Sections */
+  .section{padding:40px 0;}
+  .container{padding:0 16px;}
+
+  /* Grids → 1 col */
+  .kpi-row{grid-template-columns:1fr 1fr;gap:10px;}
+  .piste-grid{grid-template-columns:1fr;}
+  .lift-grid{grid-template-columns:1fr;}
+  .tarif-grid{grid-template-columns:1fr 1fr;gap:12px;}
+  .actu-grid{grid-template-columns:1fr;}
+  .cond-grid{grid-template-columns:1fr 1fr;}
+  .contact-grid{grid-template-columns:1fr;}
+  .forecast-strip{overflow-x:auto;padding-bottom:8px;gap:8px;}
+  .fc-day{min-width:90px;flex-shrink:0;}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:24px;}
+  .quality-section{grid-template-columns:1fr;gap:20px;padding:24px;}
+  .qs-stats{grid-template-columns:1fr 1fr;}
+
+  /* Section title */
+  .section-title{font-size:24px;}
+
+  /* Tarif card compact */
+  .tarif-card{padding:20px 14px;}
+  .tarif-price{font-size:32px;}
+  .tarif-features{display:none;}
+
+  /* Wx banner scroll */
+  .wx-inner{overflow-x:auto;gap:12px;flex-wrap:nowrap;padding:0 16px;}
+  .wx-sep{flex-shrink:0;}
+  .wx-item{flex-shrink:0;}
+
+  /* Hero stat */
+  .hstat-val{font-size:18px;}
+
+  /* KB val */
+  .kb-val{font-size:22px;}
+}
+
+@media(min-width:431px) and (max-width:768px){
+  .bottom-nav{display:block;}
+  .navbar .nav-links,.navbar .nav-cta{display:none;}
+  body{padding-bottom:calc(56px + env(safe-area-inset-bottom));}
+  .piste-grid{grid-template-columns:1fr 1fr;}
+  .tarif-grid{grid-template-columns:1fr 1fr;}
+  .actu-grid{grid-template-columns:1fr 1fr;}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+  .kpi-row{grid-template-columns:1fr 1fr;}
+}
+
+/* ═══════ SNOW ALERT BAR ═══════ */
+.snow-alert{background:linear-gradient(135deg,var(--azure),var(--blue));color:#fff;padding:12px 0;text-align:center;font-size:13px;font-weight:500;}
+.snow-alert strong{font-weight:700;}
+
+/* ═══════ UTILS ═══════ */
+.txt-center{text-align:center;}
+.txt-center .section-sub{margin:0 auto;}
+.mb16{margin-bottom:16px;}
+.mb24{margin-bottom:24px;}
+.mb32{margin-bottom:32px;}
+.mb48{margin-bottom:48px;}
+.flex-between{display:flex;justify-content:space-between;align-items:center;}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--snow);color:var(--blue);border:1px solid var(--ice);}
+</style>
+</head>
+<body>
+
+<!-- ARTICLE MODAL -->
+<div class="article-overlay" id="articleOverlay">
+  <div class="article-modal">
+    <div class="article-modal-top">
+      <span style="font-size:14px;font-weight:600;color:var(--deep)" id="amHeaderTitle">Article</span>
+      <button class="am-close" onclick="closeArticle()">✕</button>
+    </div>
+    <div class="article-modal-body">
+      <div class="am-cat" id="amCat"></div>
+      <div class="am-title" id="amTitle"></div>
+      <div class="am-meta" id="amMeta"></div>
+      <div class="am-content" id="amContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-ticker" id="topbarTicker">
+      <span>❄️ Chargement...</span>
+    </div>
+    <div class="topbar-right">
+      <span id="topbarTime">--:--</span>
+      <span style="color:rgba(255,255,255,.3)">|</span>
+      <a href="#" onclick="showPage('contact')">Contact</a>
+      <a href="#" onclick="showPage('actualites')">Actualités</a>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#" onclick="showPage('accueil')">
+      <div class="nav-logo-icon"></div>
+      <div>
+        <div class="nav-logo-name" id="navLogoName">Station</div>
+        <div class="nav-logo-sub">Station de ski</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <span class="nav-link active" onclick="showPage('accueil')">Accueil</span>
+      <span class="nav-link" onclick="showPage('meteo')">Météo</span>
+      <span class="nav-link" onclick="showPage('pistes')">Pistes</span>
+      <span class="nav-link" onclick="showPage('remontees')">Remontées</span>
+      <span class="nav-link" onclick="showPage('tarifs')">Tarifs</span>
+      <span class="nav-link" onclick="showPage('actualites')">Actualités</span>
+      <span class="nav-link" onclick="showPage('contact')">Contact</span>
+    </div>
+    <span class="nav-cta" onclick="showPage('tarifs')">🎫 Acheter un forfait</span>
+  </div>
+</nav>
+
+<!-- ═══════════════════ ACCUEIL ═══════════════════ -->
+<div class="page active" id="page-accueil">
+
+  <div class="hero">
+    <div class="hero-mountains">
+      <svg viewBox="0 0 1440 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path fill="rgba(255,255,255,0.04)" d="M0,300 L0,180 L120,120 L240,170 L360,80 L480,150 L600,50 L720,130 L840,60 L960,140 L1080,70 L1200,150 L1320,90 L1440,160 L1440,300Z"/>
+        <path fill="rgba(255,255,255,0.06)" d="M0,300 L0,240 L160,200 L320,230 L480,190 L640,215 L800,185 L960,210 L1120,190 L1280,205 L1440,195 L1440,300Z"/>
+        <path fill="rgba(255,255,255,0.12)" d="M0,300 L0,270 L200,250 L400,265 L600,245 L800,260 L1000,245 L1200,258 L1440,248 L1440,300Z"/>
+      </svg>
+    </div>
+    <div class="hero-snow" id="heroSnow"></div>
+    <div class="hero-content">
+      <div class="hero-badge"><span></span> Station ouverte — Saison en cours</div>
+      <h1 class="hero-title">Bienvenue à<br><span id="heroTitle">la Station</span></h1>
+      <p class="hero-sub" id="heroSub">Profitez de pistes enneigées, d'un panorama exceptionnel et de toutes les conditions réunies pour une expérience ski inoubliable.</p>
+      <div class="hero-btns">
+        <span class="hero-btn-p" onclick="showPage('pistes')">⛷️ Voir les pistes</span>
+        <span class="hero-btn-g" onclick="showPage('tarifs')">🎫 Tarifs & forfaits</span>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hstat-val" id="hsPistes">—</div><div class="hstat-lbl">Pistes ouvertes</div></div>
+        <div class="hero-stat"><div class="hstat-val" id="hsNeige">—</div><div class="hstat-lbl">cm neige sommet</div></div>
+        <div class="hero-stat"><div class="hstat-val" id="hsTemp">—</div><div class="hstat-lbl">Température</div></div>
+        <div class="hero-stat"><div class="hstat-val" id="hsRem">—</div><div class="hstat-lbl">Remontées actives</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wx-banner">
+    <div class="wx-inner" id="wxBanner">
+      <div style="font-size:12px;color:rgba(255,255,255,.5)">Chargement...</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="container">
+      <div class="fadein">
+        <div class="section-tag">🌡️ Conditions du jour</div>
+        <h2 class="section-title mb24">L'enneigement du moment</h2>
+        <div class="cond-grid mb48" id="condGrid"></div>
+      </div>
+      <div class="fadein">
+        <div class="flex-between mb24">
+          <div>
+            <div class="section-tag">⛷️ Pistes</div>
+            <h2 class="section-title">Domaine skiable</h2>
+          </div>
+          <span class="nav-cta" onclick="showPage('pistes')" style="font-size:13px;">Voir toutes les pistes →</span>
+        </div>
+        <div class="piste-grid" id="homePistes"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section section-alt">
+    <div class="container">
+      <div class="fadein txt-center mb48">
+        <div class="section-tag">📅 Agenda</div>
+        <h2 class="section-title">Dernières actualités</h2>
+        <p class="section-sub">Événements, informations et annonces de la station</p>
+      </div>
+      <div class="actu-grid" id="homeActus"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════ MÉTÉO ═══════════════════ -->
+<div class="page" id="page-meteo">
+  <div style="background:linear-gradient(135deg,var(--deep),var(--navy));padding:60px 0 40px;">
+    <div class="container">
+      <div class="fadein section-tag" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);">🌡️ Météo</div>
+      <h1 class="fadein" style="font-family:'Playfair Display',serif;font-size:42px;color:#fff;margin-bottom:8px;">Conditions météo</h1>
+      <p class="fadein" style="color:rgba(255,255,255,.6);font-size:16px;" id="meteoSubPub">Station · Mise à jour en direct</p>
+    </div>
+  </div>
+  <div class="section">
+    <div class="container">
+      <div class="fadein mb32">
+        <div class="section-tag">📅 5 jours</div>
+        <h2 class="section-title mb24">Prévisions</h2>
+        <div class="forecast-strip" id="pubForecast"></div>
+      </div>
+      <div class="fadein">
+        <div class="cond-grid mb32" id="pubCond"></div>
+        <div class="quality-section">
+          <div class="qs-left">
+            <div class="qs-tag">❄️ Enneigement</div>
+            <h3 id="qsTitle">Excellentes conditions</h3>
+            <p id="qsDesc">Le domaine skiable bénéficie actuellement d'un excellent enneigement naturel, complété par un enneigement artificiel sur les secteurs nécessaires.</p>
+          </div>
+          <div class="qs-stats" id="qsStats"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PISTES ═══════════════════ -->
+<div class="page" id="page-pistes">
+  <div style="background:linear-gradient(135deg,var(--deep),#163a6a);padding:60px 0 40px;">
+    <div class="container">
+      <div class="fadein section-tag" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);">⛷️ Pistes</div>
+      <h1 class="fadein" style="font-family:'Playfair Display',serif;font-size:42px;color:#fff;margin-bottom:8px;">Domaine skiable</h1>
+      <p class="fadein" style="color:rgba(255,255,255,.6);font-size:16px;" id="pistesSubPub">—</p>
+    </div>
+  </div>
+  <div class="section">
+    <div class="container">
+      <div class="fadein kpi-row" id="pistesKpi"></div>
+      <div class="fadein">
+        <div class="flex-between mb24">
+          <div>
+            <div class="section-tag">📋 Liste complète</div>
+            <h2 class="section-title">Toutes les pistes</h2>
+          </div>
+          <div style="display:flex;gap:8px;" id="pisteFilters">
+            <button onclick="filterPistes('')" class="chip active" id="pf-all">Toutes</button>
+            <button onclick="filterPistes('verte')" class="chip" id="pf-verte" style="background:#dcfce7;color:#16a34a;border-color:#bbf7d0">Vertes</button>
+            <button onclick="filterPistes('bleue')" class="chip" id="pf-bleue" style="background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe">Bleues</button>
+            <button onclick="filterPistes('rouge')" class="chip" id="pf-rouge" style="background:#fee2e2;color:#dc2626;border-color:#fecaca">Rouges</button>
+            <button onclick="filterPistes('noire')" class="chip" id="pf-noire" style="background:#f1f5f9;color:#334155;border-color:#cbd5e1">Noires</button>
+          </div>
+        </div>
+        <div class="piste-grid" id="pubPistesGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ REMONTÉES ═══════════════════ -->
+<div class="page" id="page-remontees">
+  <div style="background:linear-gradient(135deg,#0a2040,#1a4080);padding:60px 0 40px;">
+    <div class="container">
+      <div class="fadein section-tag" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);">🚡 Remontées</div>
+      <h1 class="fadein" style="font-family:'Playfair Display',serif;font-size:42px;color:#fff;margin-bottom:8px;">Remontées mécaniques</h1>
+      <p class="fadein" style="color:rgba(255,255,255,.6);font-size:16px;" id="remSubPub">—</p>
+    </div>
+  </div>
+  <div class="section">
+    <div class="container">
+      <div class="fadein kpi-row" id="remKpiPub"></div>
+      <div class="fadein">
+        <div class="section-tag mb16">🗓️ Horaires</div>
+        <div style="background:var(--off);border:1px solid var(--mid);border-radius:14px;padding:16px 20px;margin-bottom:28px;display:flex;gap:32px;font-size:14px;">
+          <span>🕗 Ouverture : <strong>08h30</strong></span>
+          <span>🕔 Fermeture : <strong>17h00</strong></span>
+          <span>🎿 Dernière montée : <strong>16h30</strong></span>
+          <span>📞 Infos : <strong id="remPhone">—</strong></span>
+        </div>
+        <div class="lift-grid" id="pubLifts"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TARIFS ═══════════════════ -->
+<div class="page" id="page-tarifs">
+  <div style="background:linear-gradient(135deg,var(--deep),#1a3060);padding:60px 0 40px;">
+    <div class="container">
+      <div class="fadein section-tag" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);">🎫 Tarifs</div>
+      <h1 class="fadein" style="font-family:'Playfair Display',serif;font-size:42px;color:#fff;margin-bottom:8px;">Forfaits & tarifs</h1>
+      <p class="fadein" style="color:rgba(255,255,255,.6);font-size:16px;">Saison 2024-2025 · Tarifs toutes taxes comprises</p>
+    </div>
+  </div>
+  <div class="section">
+    <div class="container">
+      <div class="fadein txt-center mb48">
+        <div class="section-tag">🏷️ Journée</div>
+        <h2 class="section-title">Forfaits journée</h2>
+        <p class="section-sub">Remontées illimitées de 8h30 à 17h00</p>
+      </div>
+      <div class="fadein tarif-grid mb48" id="tarifGrid"></div>
+      <div class="fadein">
+        <div class="section-tag mb16">📦 Avantages forfait</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <div style="background:var(--white);border:1px solid var(--mid);border-radius:14px;padding:20px;text-align:center;box-shadow:var(--shadow);">
+            <div style="font-size:32px;margin-bottom:10px;">🏔️</div>
+            <div style="font-size:15px;font-weight:600;color:var(--deep);margin-bottom:6px;">Domaine illimité</div>
+            <div style="font-size:13px;color:var(--steel);">Accès à toutes les pistes ouvertes du domaine skiable</div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--mid);border-radius:14px;padding:20px;text-align:center;box-shadow:var(--shadow);">
+            <div style="font-size:32px;margin-bottom:10px;">🚡</div>
+            <div style="font-size:15px;font-weight:600;color:var(--deep);margin-bottom:6px;">Remontées incluses</div>
+            <div style="font-size:13px;color:var(--steel);">Toutes les remontées mécaniques en service incluses</div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--mid);border-radius:14px;padding:20px;text-align:center;box-shadow:var(--shadow);">
+            <div style="font-size:32px;margin-bottom:10px;">❄️</div>
+            <div style="font-size:15px;font-weight:600;color:var(--deep);margin-bottom:6px;">Neige garantie</div>
+            <div style="font-size:13px;color:var(--steel);">Enneigement artificiel activé en cas de conditions insuffisantes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ACTUALITÉS ═══════════════════ -->
+<div class="page" id="page-actualites">
+  <div style="background:linear-gradient(135deg,var(--deep),#102850);padding:60px 0 40px;">
+    <div class="container">
+      <div class="fadein section-tag" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);">📰 Actualités</div>
+      <h1 class="fadein" style="font-family:'Playfair Display',serif;font-size:42px;color:#fff;margin-bottom:8px;">Actualités de la station</h1>
+      <p class="fadein" style="color:rgba(255,255,255,.6);font-size:16px;" id="actSubPub">Informations, événements et annonces</p>
+    </div>
+  </div>
+  <div class="section">
+    <div class="container">
+      <div class="fadein flex-between mb24">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="filterActus('')" class="chip" id="af-all">Toutes</button>
+          <button onclick="filterActus('evenement')" class="chip" id="af-ev" style="background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe">Événements</button>
+          <button onclick="filterActus('info')" class="chip" id="af-info" style="background:#dcfce7;color:#16a34a;border-color:#bbf7d0">Infos</button>
+          <button onclick="filterActus('alerte')" class="chip" id="af-al" style="background:#fee2e2;color:#dc2626;border-color:#fecaca">Alertes</button>
+          <button onclick="filterActus('travaux')" class="chip" id="af-tr" style="background:#fef3c7;color:#d97706;border-color:#fde68a">Travaux</button>
+          <button onclick="filterActus('competition')" class="chip" id="af-co" style="background:#fef9c3;color:#92400e;border-color:#fef08a">Compétitions</button>
+        </div>
+      </div>
+      <div class="actu-grid fadein" id="pubActuGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CONTACT ═══════════════════ -->
+<div class="page" id="page-contact">
+  <div style="background:linear-gradient(135deg,var(--deep),#0f2a48);padding:60px 0 40px;">
+    <div class="container">
+      <div class="fadein section-tag" style="border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);">📞 Contact</div>
+      <h1 class="fadein" style="font-family:'Playfair Display',serif;font-size:42px;color:#fff;margin-bottom:8px;">Nous contacter</h1>
+      <p class="fadein" style="color:rgba(255,255,255,.6);font-size:16px;">Une question ? Notre équipe est là pour vous</p>
+    </div>
+  </div>
+  <div class="section">
+    <div class="container">
+      <div class="fadein contact-grid">
+        <div class="contact-info">
+          <div class="ci-item"><div class="ci-ico">📍</div><div><div class="ci-title">Adresse</div><div class="ci-val" id="contactAddr">Station des Sommets<br>Haute-Savoie, France</div></div></div>
+          <div class="ci-item"><div class="ci-ico">📞</div><div><div class="ci-title">Téléphone</div><div class="ci-val">+33 (0)4 XX XX XX XX<br>Lun–Ven : 8h–18h</div></div></div>
+          <div class="ci-item"><div class="ci-ico">📧</div><div><div class="ci-title">Email</div><div class="ci-val" id="contactEmail">contact@station.fr</div></div></div>
+          <div class="ci-item"><div class="ci-ico">🕗</div><div><div class="ci-title">Horaires remontées</div><div class="ci-val">8h30 – 17h00<br>Dernière montée : 16h30</div></div></div>
+          <div class="ci-item"><div class="ci-ico">🚁</div><div><div class="ci-title">Secours montagne</div><div class="ci-val">PGHM : 04 50 53 16 89<br>Urgences : 15 / 18 / 112</div></div></div>
+        </div>
+        <div class="contact-form">
+          <div class="cf-title">Envoyer un message</div>
+          <div class="cf-row"><label class="cf-label">Nom complet</label><input class="cf-input" type="text" id="cfNom" placeholder="Votre nom"></div>
+          <div class="cf-row"><label class="cf-label">Email</label><input class="cf-input" type="email" id="cfEmail" placeholder="votre@email.fr"></div>
+          <div class="cf-row"><label class="cf-label">Sujet</label>
+            <select class="cf-input" id="cfSujet">
+              <option>Renseignements généraux</option>
+              <option>Réservation forfait</option>
+              <option>Location matériel</option>
+              <option>École de ski</option>
+              <option>Hébergement</option>
+              <option>Autre</option>
+            </select>
+          </div>
+          <div class="cf-row"><label class="cf-label">Message</label><textarea class="cf-input" id="cfMsg" placeholder="Votre message..."></textarea></div>
+          <button class="cf-btn" onclick="sendContact()">📨 Envoyer le message</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bottom-nav-inner">
+    <button class="bn-item active" id="bn-accueil" onclick="showPage('accueil')">
+      <span class="bn-ico">🏔️</span>
+      <span class="bn-lbl">Accueil</span>
+    </button>
+    <button class="bn-item" id="bn-pistes" onclick="showPage('pistes')">
+      <span class="bn-ico">⛷️</span>
+      <span class="bn-lbl">Pistes</span>
+    </button>
+    <button class="bn-item bn-forfait" id="bn-tarifs" onclick="showPage('tarifs')">
+      <span class="bn-ico">🎫</span>
+      <span class="bn-lbl">Forfaits</span>
+    </button>
+    <button class="bn-item" id="bn-meteo" onclick="showPage('meteo')">
+      <span class="bn-ico">🌨️</span>
+      <span class="bn-lbl">Météo</span>
+    </button>
+    <button class="bn-item" id="bn-actualites" onclick="showPage('actualites')">
+      <span class="bn-ico">📰</span>
+      <span class="bn-lbl">Actus</span>
+    </button>
+  </div>
+</nav>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo-name" id="footerName">Station de Ski</div>
+        <p id="footerDesc">Votre station de ski pour des vacances inoubliables en montagne.</p>
+      </div>
+      <div class="footer-col">
+        <h4>La station</h4>
+        <a onclick="showPage('accueil')">Accueil</a>
+        <a onclick="showPage('meteo')">Météo</a>
+        <a onclick="showPage('pistes')">Pistes</a>
+        <a onclick="showPage('remontees')">Remontées</a>
+      </div>
+      <div class="footer-col">
+        <h4>Pratique</h4>
+        <a onclick="showPage('tarifs')">Tarifs</a>
+        <a onclick="showPage('actualites')">Actualités</a>
+        <a onclick="showPage('contact')">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Sécurité</h4>
+        <a>Règles de sécurité</a>
+        <a>Signalement risque</a>
+        <a>PGHM : 04 50 53 16 89</a>
+        <a>Urgences : 15 / 18 / 112</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span id="footerCopy">© 2025 Station de Ski. Tous droits réservés.</span>
+      <span>Propulsé par AlpineOS</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const SKEY='alpineOS_state';
+let S;
+const DC={verte:'#16a34a',bleue:'#1d4ed8',rouge:'#dc2626',noire:'#1e293b'};
+const DL={verte:'Verte',bleue:'Bleue',rouge:'Rouge',noire:'Noire'};
+const catLabel={evenement:'Événement',alerte:'Alerte',info:'Information',travaux:'Travaux',competition:'Compétition'};
+const catClass={evenement:'ac-evenement',alerte:'ac-alerte',info:'ac-info',travaux:'ac-travaux',competition:'ac-competition'};
+const catIco={evenement:'🎉',alerte:'⚠️',info:'ℹ️',travaux:'🔧',competition:'🏆'};
+
+const DEFAULT={
+  station:{nom:"LES SOMMETS",alt:2850,cap:4500,visiteurs:2847,recettes:41200,satisf:94,tarifs:{adulte:42,enfant:28,semA:210,semE:148}},
+  meteo:{tempVillage:-3,tempSommet:-12,vent:12,neigeFraiche:22,neigeSommet:185,avalanche:2,qualiteNeige:"Poudreuse ★★★",visibilite:"Bonne (>10km)",
+    previsions:[
+      {jour:"Aujourd'hui",ico:"🌨️",tempMax:-8,tempMin:-14,neige:15},
+      {jour:"Mardi",ico:"⛅",tempMax:-5,tempMin:-11,neige:5},
+      {jour:"Mercredi",ico:"☀️",tempMax:-2,tempMin:-8,neige:0},
+      {jour:"Jeudi",ico:"🌨️",tempMax:-10,tempMin:-17,neige:25},
+      {jour:"Vendredi",ico:"🌨️",tempMax:-12,tempMin:-19,neige:30}
+    ]
+  },
+  pistes:[
+    {id:1,nom:"Étoile du Nord",diff:"verte",long:"2.1 km",den:"310m",neige:78,open:true},
+    {id:2,nom:"Pré Fleuri",diff:"verte",long:"1.4 km",den:"180m",neige:82,open:true},
+    {id:3,nom:"Chamois Express",diff:"bleue",long:"3.2 km",den:"520m",neige:92,open:true},
+    {id:4,nom:"Vallée Blanche",diff:"bleue",long:"4.1 km",den:"640m",neige:88,open:true},
+    {id:5,nom:"Diable Noir",diff:"rouge",long:"2.8 km",den:"480m",neige:45,open:false},
+    {id:6,nom:"Face Nord",diff:"rouge",long:"1.9 km",den:"390m",neige:67,open:true},
+    {id:7,nom:"L'Abîme",diff:"noire",long:"1.6 km",den:"560m",neige:38,open:false},
+    {id:8,nom:"Couloir des Aigles",diff:"noire",long:"2.2 km",den:"710m",neige:51,open:false}
+  ],
+  remontees:[
+    {id:1,nom:"Télécabine des Sommets",type:"télécabine",places:10,vitesse:5,capa:2400,open:true,note:""},
+    {id:2,nom:"Télésiège Aiglon",type:"télésiège",places:6,vitesse:2.5,capa:900,open:true,note:"⚠ Vent"},
+    {id:3,nom:"Télésiège du Glacier",type:"télésiège",places:4,vitesse:4.5,capa:1800,open:true,note:""},
+    {id:4,nom:"Téleski des Marmots",type:"téleski",places:2,vitesse:3,capa:600,open:true,note:""},
+    {id:5,nom:"Télécabine Panorama",type:"télécabine",places:8,vitesse:0,capa:0,open:false,note:"Maintenance"}
+  ],
+  actualites:[
+    {id:1,titre:"Fermeture de la route",categorie:"alerte",resume:"Fermeture entre Barrême et La Foux de 15h00 à 18h00.",contenu:"Fermeture entre Barrême et La Foux de 15h00 à 18h00. \nDes camions pour la constructions de nouveaux télésieges sont en train de monter. \nLa construction commencera dès aujourd'hui une fois les camions arrivé. \n Meci de bien vouloir respecter les conditions et de vous déplacer qu'après 18h.\n Les prochains transport se feront la nuit.",date:"20 Avril 2026",auteur:"Direction",publie:true},
+    {id:2,titre:"Reconstruction de la station",categorie:"info",resume:"La reconstruction de la station débute le 20/04/2026",contenu:"Suite à l'annonce des JO, la Foux d'Allos se doit de reconstruire presque intégralement la station !\n La station comme vous l'avez remarqué à fermer plus tôt pour être prêt pour 2030.\n Depuis le 15/03/2025, les ouvriers travaillent sans relâche. En effet nous avons demonté tous les télésièges sauf le Marin Pascal. Nous avons reçu aujourd'hui les nouveaux télésièges qui sont en train d'être construits. Nous attaquons avec les nouveaux télésièges de l'aiguille, la chaup et l'observatoire !\n Dans la nuit nous serons en train d'être livrés. 4 télésièges seront construits demain ! Ces télésièges ne sont pas visibles depuis la station alors nous vous gardons la surprise !\n\n Merci aux JO de nous faire confiance et à vous aussi. Sans vous cela serait impossible. C'est pour cela que nous ouvrirons l'année prochaine la station gratuitement pendant une semaine ! \nPar souci d'équité nous ne le ferons pas pendant les vacances.\n Nous vous informerons dans la catégorie 'évènement' très bientôt.\n\nMerci de nous soutenir, vous ne serez pas déçu.\n Une nouvelle aventure commence pour nous !\n\n L'équipe Val d'Allos.",date:"20 Avril 2026",auteur:"Direction",publie:true},
+  ]
+};
+
+let pisteFilter='',actuFilter='';
+
+function loadState(){
+  const d=localStorage.getItem(SKEY);
+  try{ S=d?JSON.parse(d):JSON.parse(JSON.stringify(DEFAULT)); }
+  catch{ S=JSON.parse(JSON.stringify(DEFAULT)); }
+  // Migration : garantir tous les champs
+  if(!S.actualites)  S.actualites  = JSON.parse(JSON.stringify(DEFAULT.actualites));
+  if(!S.pistes)      S.pistes      = JSON.parse(JSON.stringify(DEFAULT.pistes));
+  if(!S.remontees)   S.remontees   = JSON.parse(JSON.stringify(DEFAULT.remontees));
+  if(!S.meteo)       S.meteo       = JSON.parse(JSON.stringify(DEFAULT.meteo));
+  if(!S.station)     S.station     = JSON.parse(JSON.stringify(DEFAULT.station));
+  if(!S.station.tarifs) S.station.tarifs={adulte:42,enfant:28,semA:210,semE:148};
+  if(!S.meteo.previsions) S.meteo.previsions=JSON.parse(JSON.stringify(DEFAULT.meteo.previsions));
+}
+
+// CLOCK
+function updateClock(){
+  document.getElementById('topbarTime').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(updateClock,1000);updateClock();
+
+// HERO SNOW
+const hs=document.getElementById('heroSnow');
+for(let i=0;i<30;i++){const s=document.createElement('span');const sz=Math.random()*4+1;s.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;animation-duration:${Math.random()*10+8}s;animation-delay:${Math.random()*15}s;opacity:${Math.random()*.5+.2};`;hs.appendChild(s);}
+
+// PAGE NAV
+function showPage(id){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(e=>e.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);
+  if(pg){pg.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+  // sync desktop nav
+  document.querySelectorAll('.nav-link').forEach(e=>{if(e.getAttribute('onclick')&&e.getAttribute('onclick').includes("'"+id+"'"))e.classList.add('active');});
+  // sync bottom nav
+  const bn=document.getElementById('bn-'+id);
+  if(bn) bn.classList.add('active');
+  loadState();renderPage(id);
+}
+
+function renderPage(id){
+  ({accueil:renderAccueil,meteo:renderMeteo,pistes:renderPistes,remontees:renderRemontees,tarifs:renderTarifs,actualites:renderActualites,contact:renderContact})[id]?.();
+}
+
+// HELPERS
+function diffBadge(d){return`<span class="diff-badge"><span class="diff-dot" style="background:${DC[d]}"></span>${DL[d]}</span>`;}
+function openBadge(open,note){
+  if(open&&note)return`<span class="status-tag st-prep">◐ ${note}</span>`;
+  if(open)return`<span class="status-tag st-open">● Ouverte</span>`;
+  return`<span class="status-tag st-closed">✕ Fermée</span>`;
+}
+function pisteCard(p){const pct=Math.min(p.neige,100);return`<div class="piste-card"><div class="piste-stripe" style="background:${DC[p.diff]}"></div><div class="piste-body"><div class="piste-name">${p.nom}</div><div class="piste-meta"><span>${diffBadge(p.diff)}</span><span>📏 ${p.long}</span><span>⬇️ ${p.den}</span></div><div class="piste-snow"><div class="piste-snow-lbl">Enneigement : ${p.neige} cm</div><div class="piste-snow-bar"><div class="piste-snow-fill" style="width:${pct}%;${p.neige<50?'background:linear-gradient(90deg,#dc2626,#f87171)':''}"></div></div></div>${openBadge(p.open,p.note)}</div></div>`;}
+
+// ACCUEIL
+function renderAccueil(){
+  const name=S.station.nom;
+  document.getElementById('heroTitle').textContent=name;
+  document.getElementById('pageTitle').textContent=name+' — Station de ski';
+  document.getElementById('navLogoName').textContent=name;
+  document.getElementById('footerName').textContent=name;
+  document.getElementById('footerCopy').textContent='© 2025 '+name+'. Tous droits réservés.';
+  document.getElementById('footerDesc').textContent='Votre station de ski pour des vacances inoubliables à '+name.charAt(0)+name.slice(1).toLowerCase()+'.';
+  const po=S.pistes.filter(p=>p.open).length;
+  document.getElementById('hsPistes').textContent=po+'/'+S.pistes.length;
+  document.getElementById('hsNeige').textContent=S.meteo.neigeSommet;
+  document.getElementById('hsTemp').textContent=S.meteo.tempVillage+'°C';
+  document.getElementById('hsRem').textContent=S.remontees.filter(r=>r.open).length+'/'+S.remontees.length;
+  // topbar
+  document.getElementById('topbarTicker').innerHTML=`<span>❄️ Neige : <b>${S.meteo.neigeSommet}cm</b></span><span style="color:rgba(255,255,255,.3)">|</span><span>🌡️ <b>${S.meteo.tempVillage}°C</b></span><span style="color:rgba(255,255,255,.3)">|</span><span>💨 Vent : <b>${S.meteo.vent}km/h</b></span><span style="color:rgba(255,255,255,.3)">|</span><span>⛷️ <b>${po}/${S.pistes.length}</b> pistes ouvertes</span>`;
+  // wx banner
+  document.getElementById('wxBanner').innerHTML=`
+    <div class="wx-item"><div class="ico">🌡️</div><div><div class="val">${S.meteo.tempVillage}°C</div><div class="lbl">Village</div></div></div>
+    <div class="wx-sep"></div>
+    <div class="wx-item"><div class="ico">🌡️</div><div><div class="val">${S.meteo.tempSommet}°C</div><div class="lbl">Sommet</div></div></div>
+    <div class="wx-sep"></div>
+    <div class="wx-item"><div class="ico">❄️</div><div><div class="val">${S.meteo.neigeSommet}cm</div><div class="lbl">Neige sommet</div></div></div>
+    <div class="wx-sep"></div>
+    <div class="wx-item"><div class="ico">💨</div><div><div class="val">${S.meteo.vent}km/h</div><div class="lbl">Vent</div></div></div>
+    <div class="wx-sep"></div>
+    <div class="wx-item"><div class="ico">🧊</div><div><div class="val" style="font-size:13px">${S.meteo.qualiteNeige}</div><div class="lbl">Qualité neige</div></div></div>
+    <div class="wx-qual">❄️ +${S.meteo.neigeFraiche}cm en 48h</div>`;
+  // cond grid
+  const aval=S.meteo.avalanche;
+  document.getElementById('condGrid').innerHTML=`
+    <div class="cond-card"><div class="cond-ico">🌡️</div><div class="cond-val">${S.meteo.tempSommet}°C</div><div class="cond-lbl">Température sommet</div><div class="cond-sub">${S.meteo.tempVillage}°C au village</div></div>
+    <div class="cond-card"><div class="cond-ico">❄️</div><div class="cond-val">${S.meteo.neigeSommet}cm</div><div class="cond-lbl">Hauteur neige</div><div class="cond-sub">+${S.meteo.neigeFraiche}cm en 48h</div></div>
+    <div class="cond-card"><div class="cond-ico">🌬️</div><div class="cond-val">${S.meteo.vent}</div><div class="cond-lbl">Vent (km/h)</div><div class="cond-sub">${S.meteo.visibilite}</div></div>
+    <div class="cond-card"><div class="cond-ico">⚠️</div><div class="cond-val" style="color:${aval<=2?'var(--go)':aval<=3?'var(--warn)':'var(--alert)'}">${aval}/5</div><div class="cond-lbl">Risque avalanche</div><div class="cond-sub">${aval<=1?'Faible':aval<=2?'Limité':aval<=3?'Marqué':aval<=4?'Fort':'Très fort'}</div></div>
+    <div class="cond-card"><div class="cond-ico">🏔️</div><div class="cond-val">${po}/${S.pistes.length}</div><div class="cond-lbl">Pistes ouvertes</div><div class="cond-sub">${S.pistes.filter(p=>p.diff==='noire'&&p.open).length} noires ouvertes</div></div>
+    <div class="cond-card"><div class="cond-ico">🚡</div><div class="cond-val">${S.remontees.filter(r=>r.open).length}/${S.remontees.length}</div><div class="cond-lbl">Remontées actives</div><div class="cond-sub">${S.remontees.filter(r=>r.open).reduce((a,r)=>a+r.capa,0).toLocaleString('fr-FR')} pers/h</div></div>`;
+  // home pistes (top 6 open first)
+  const sorted=[...S.pistes].sort((a,b)=>b.open-a.open).slice(0,6);
+  document.getElementById('homePistes').innerHTML=sorted.map(pisteCard).join('');
+  // home actus
+  const pubActus=S.actualites.filter(a=>a.publie).slice(0,3);
+  document.getElementById('homeActus').innerHTML=pubActus.map(actuCard).join('');
+}
+
+// MÉTÉO
+function renderMeteo(){
+  document.getElementById('meteoSubPub').textContent='Station '+S.station.nom+' · Alt. '+S.station.alt+'m';
+  document.getElementById('pubForecast').innerHTML=S.meteo.previsions.map((p,i)=>`<div class="fc-day ${i===0?'today':''}"><div class="fc-dow">${p.jour}</div><div class="fc-ico">${p.ico}</div><div class="fc-temp">${p.tempMax}°C</div><div class="fc-min">${p.tempMin}°C</div><div class="fc-snow">${p.neige>0?'❄ +'+p.neige+'cm':'—'}</div></div>`).join('');
+  const aval=S.meteo.avalanche;
+  document.getElementById('pubCond').innerHTML=`
+    <div class="cond-card"><div class="cond-ico">🌡️</div><div class="cond-val">${S.meteo.tempSommet}°C</div><div class="cond-lbl">Sommet ${S.station.alt}m</div></div>
+    <div class="cond-card"><div class="cond-ico">❄️</div><div class="cond-val">${S.meteo.neigeSommet}cm</div><div class="cond-lbl">Neige sommet</div></div>
+    <div class="cond-card"><div class="cond-ico">💨</div><div class="cond-val">${S.meteo.vent}</div><div class="cond-lbl">Vent km/h</div></div>
+    <div class="cond-card"><div class="cond-ico">🌫️</div><div class="cond-val" style="font-size:14px">${S.meteo.visibilite.split(' ')[0]}</div><div class="cond-lbl">Visibilité</div></div>
+    <div class="cond-card"><div class="cond-ico">❄️</div><div class="cond-val">+${S.meteo.neigeFraiche}cm</div><div class="cond-lbl">Chute 48h</div></div>
+    <div class="cond-card"><div class="cond-ico">⚠️</div><div class="cond-val" style="color:${aval<=2?'var(--go)':aval<=3?'var(--warn)':'var(--alert)'}">${aval}/5</div><div class="cond-lbl">Avalanche</div></div>`;
+  document.getElementById('qsTitle').textContent=S.meteo.qualiteNeige.includes('★★★')?'Conditions exceptionnelles':S.meteo.qualiteNeige.includes('★★')?'Bonnes conditions':'Conditions correctes';
+  document.getElementById('qsStats').innerHTML=`
+    <div class="qs-stat"><div class="qs-stat-val">${S.meteo.neigeSommet}cm</div><div class="qs-stat-lbl">Sommet</div></div>
+    <div class="qs-stat"><div class="qs-stat-val">+${S.meteo.neigeFraiche}cm</div><div class="qs-stat-lbl">48h fraîche</div></div>
+    <div class="qs-stat"><div class="qs-stat-val">${S.meteo.qualiteNeige.split(' ')[0]}</div><div class="qs-stat-lbl">Qualité</div></div>
+    <div class="qs-stat"><div class="qs-stat-val">${S.pistes.filter(p=>p.open).length}/${S.pistes.length}</div><div class="qs-stat-lbl">Pistes open</div></div>`;
+}
+
+// PISTES
+function renderPistes(){
+  const po=S.pistes.filter(p=>p.open).length;
+  document.getElementById('pistesSubPub').textContent=S.pistes.length+' pistes · '+po+' ouvertes · '+S.station.alt+'m';
+  const v=S.pistes.filter(p=>p.diff==='verte'),b=S.pistes.filter(p=>p.diff==='bleue'),r=S.pistes.filter(p=>p.diff==='rouge'),n=S.pistes.filter(p=>p.diff==='noire');
+  document.getElementById('pistesKpi').innerHTML=kpiBox('🟢','Vertes',v.filter(p=>p.open).length+'/'+v.length,'','up')+kpiBox('🔵','Bleues',b.filter(p=>p.open).length+'/'+b.length,'','up')+kpiBox('🔴','Rouges',r.filter(p=>p.open).length+'/'+r.length,'','nu')+kpiBox('⚫','Noires',n.filter(p=>p.open).length+'/'+n.length,'','dn');
+  renderPistesGrid();
+}
+function renderPistesGrid(){
+  const pistes=pisteFilter?S.pistes.filter(p=>p.diff===pisteFilter):S.pistes;
+  document.getElementById('pubPistesGrid').innerHTML=pistes.length?pistes.map(pisteCard).join(''):'<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--steel)">Aucune piste dans cette catégorie</div>';
+}
+function filterPistes(d){pisteFilter=d;document.querySelectorAll('[id^="pf-"]').forEach(e=>e.style.fontWeight='500');document.getElementById('pf-'+(d||'all')).style.fontWeight='700';renderPistesGrid();}
+
+// REMONTÉES
+function renderRemontees(){
+  const op=S.remontees.filter(r=>r.open).length,cap=S.remontees.filter(r=>r.open).reduce((a,r)=>a+r.capa,0);
+  document.getElementById('remSubPub').textContent=S.remontees.length+' installations · '+op+' en service · '+S.station.nom;
+  document.getElementById('remPhone').textContent='+33 (0)4 XX XX XX XX';
+  document.getElementById('remKpiPub').innerHTML=kpiBox('🚡','Remontées actives',op+'/'+S.remontees.length,'','up')+kpiBox('👥','Capacité/h',cap.toLocaleString('fr-FR'),'pers','up')+kpiBox('⏱️','Attente moy.','~4','min','up')+kpiBox('✅','En service',Math.round(op/S.remontees.length*100),'%',op===S.remontees.length?'up':'nu');
+  document.getElementById('pubLifts').innerHTML=S.remontees.map(r=>{const ico=r.type==='télécabine'?'🚡':r.type==='télésiège'?'🪑':'🎿';const badge=r.open?`<span class="lift-badge lb-open">● En service</span>`:r.note==='Maintenance'?`<span class="lift-badge lb-maint">🔧 Maintenance</span>`:`<span class="lift-badge lb-closed">✕ Arrêtée</span>`;return`<div class="lift-card" ${!r.open?'style="opacity:.65"':''}><div class="lift-ico">${ico}</div><div class="lift-info"><div class="lift-name">${r.nom}${r.note&&r.note!=='Maintenance'?` <small style="color:var(--warn);font-size:11px">${r.note}</small>`:''}</div><div class="lift-meta">${r.places} places · ${r.type}</div>${badge}</div><div class="lift-capa"><div class="lc-num">${r.open?r.capa:'—'}</div><div class="lc-lbl">pers/h</div></div></div>`;}).join('');
+}
+
+// TARIFS
+function renderTarifs(){
+  const t=S.station.tarifs||{adulte:42,enfant:28,semA:210,semE:148};
+  document.getElementById('tarifGrid').innerHTML=`
+    <div class="tarif-card"><div class="tarif-ico">👶</div><div class="tarif-name">Enfant — Journée</div><div class="tarif-price"><span class="tarif-eu">€</span>${t.enfant}</div><div class="tarif-per">par personne · -12 ans</div><div class="tarif-features"><div class="tarif-feat">✅ Toutes pistes ouvertes</div><div class="tarif-feat">✅ Remontées illimitées</div><div class="tarif-feat">✅ Encadrement inclus</div></div><button class="tarif-btn">Acheter</button></div>
+    <div class="tarif-card featured"><div class="tarif-ico">🎿</div><div class="tarif-name">Adulte — Journée</div><div class="tarif-price"><span class="tarif-eu">€</span>${t.adulte}</div><div class="tarif-per">par personne · 12-64 ans</div><div class="tarif-features"><div class="tarif-feat">✅ Toutes pistes ouvertes</div><div class="tarif-feat">✅ Remontées illimitées</div><div class="tarif-feat">✅ Accès snowpark</div></div><button class="tarif-btn">Acheter</button></div>
+    <div class="tarif-card"><div class="tarif-ico">👶</div><div class="tarif-name">Enfant — Semaine</div><div class="tarif-price"><span class="tarif-eu">€</span>${t.semE}</div><div class="tarif-per">7 jours · -12 ans</div><div class="tarif-features"><div class="tarif-feat">✅ 7 jours consécutifs</div><div class="tarif-feat">✅ Toutes pistes ouvertes</div><div class="tarif-feat">✅ Tarif préférentiel</div></div><button class="tarif-btn">Acheter</button></div>
+    <div class="tarif-card"><div class="tarif-ico">🏔️</div><div class="tarif-name">Adulte — Semaine</div><div class="tarif-price"><span class="tarif-eu">€</span>${t.semA}</div><div class="tarif-per">7 jours · 12-64 ans</div><div class="tarif-features"><div class="tarif-feat">✅ 7 jours consécutifs</div><div class="tarif-feat">✅ Accès complet domaine</div><div class="tarif-feat">✅ Meilleur rapport qualité/prix</div></div><button class="tarif-btn">Acheter</button></div>`;
+}
+
+// ACTUALITÉS
+function actuCard(a){return`<div class="actu-card"><div class="actu-top"><span class="actu-cat ${catClass[a.categorie]||'ac-info'}">${catIco[a.categorie]||'ℹ️'} ${catLabel[a.categorie]||a.categorie}</span><div class="actu-title">${a.titre}</div><div class="actu-meta">📅 ${a.date} · ✍️ ${a.auteur}</div></div><div class="actu-resume">${a.resume}</div><div class="actu-footer"><button class="actu-read" onclick="openArticle(${a.id})">Lire la suite →</button><span style="font-size:11px;color:var(--steel)">${a.date}</span></div></div>`;}
+function renderActualites(){
+  const arts=(actuFilter?S.actualites.filter(a=>a.categorie===actuFilter):S.actualites).filter(a=>a.publie);
+  document.getElementById('actSubPub').textContent=(S.actualites.filter(a=>a.publie).length)+' articles publiés';
+  document.getElementById('pubActuGrid').innerHTML=arts.length?arts.map(actuCard).join(''):`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--steel)">Aucun article dans cette catégorie pour le moment.</div>`;
+}
+function filterActus(c){actuFilter=c;renderActualites();}
+
+function openArticle(id){
+  const a=S.actualites.find(x=>x.id===id);if(!a)return;
+  document.getElementById('amHeaderTitle').textContent=catLabel[a.categorie]||'Article';
+  document.getElementById('amCat').className='am-cat '+(catClass[a.categorie]||'ac-info');
+  document.getElementById('amCat').innerHTML=(catIco[a.categorie]||'ℹ️')+' '+(catLabel[a.categorie]||a.categorie);
+  document.getElementById('amTitle').textContent=a.titre;
+  document.getElementById('amMeta').textContent='📅 '+a.date+' · ✍️ '+a.auteur;
+  document.getElementById('amContent').textContent=a.contenu||a.resume;
+  document.getElementById('articleOverlay').classList.add('show');
+}
+function closeArticle(){document.getElementById('articleOverlay').classList.remove('show');}
+document.getElementById('articleOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('articleOverlay'))closeArticle();});
+
+// CONTACT
+function renderContact(){
+  document.getElementById('contactAddr').innerHTML=S.station.nom+'<br>Alt. '+S.station.alt+'m · France';
+}
+function sendContact(){
+  const nom=document.getElementById('cfNom').value.trim(),email=document.getElementById('cfEmail').value.trim(),msg=document.getElementById('cfMsg').value.trim();
+  if(!nom||!email||!msg){alert('Veuillez remplir tous les champs.');return;}
+  document.getElementById('cfNom').value='';document.getElementById('cfEmail').value='';document.getElementById('cfMsg').value='';
+  const btn=document.querySelector('.cf-btn');btn.textContent='✅ Message envoyé !';btn.style.background='var(--go)';setTimeout(()=>{btn.textContent='📨 Envoyer le message';btn.style.background='';},3000);
+}
+
+// KPI BOX
+function kpiBox(ico,lbl,val,unit,dc){return`<div class="kpi-box"><div class="kb-ico">${ico}</div><div class="kb-val">${val}<span class="kb-unit">${unit||''}</span></div><div class="kb-lbl">${lbl}</div></div>`;}
+
+// BOOT
+loadState();
+renderAccueil();
+// Auto-refresh from localStorage every 15s (picks up admin changes)
+setInterval(()=>{loadState();const active=document.querySelector('.page.active');if(active)renderPage(active.id.replace('page-',''));},15000);
+</script>
+</body>
+</html>

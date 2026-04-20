@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlpineOS — Administration</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ice:#d6eeff;--snow:#f0f7ff;--deep:#07111f;
+  --azure:#1a6fff;--frost:#5eb8ff;--glacier:#a8d8f0;
+  --alert:#ff4d4d;--warn:#ffb347;--go:#3ddc84;--gold:#ffd700;
+  --panel:rgba(12,22,44,0.82);--border:rgba(94,184,255,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--deep);color:var(--snow);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,#1a3a6a 0%,transparent 70%),linear-gradient(180deg,#07111f 0%,#0a1a2f 60%,#07111f 100%);z-index:0;pointer-events:none;}
+body::after{content:'';position:fixed;bottom:0;left:0;right:0;height:30vh;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 300'%3E%3Cpath fill='%230a1520' d='M0,300 L0,220 L80,180 L160,220 L240,120 L320,200 L400,80 L480,160 L560,60 L640,150 L720,40 L800,130 L880,50 L960,140 L1040,70 L1120,160 L1200,90 L1280,170 L1360,110 L1440,180 L1440,300 Z'/%3E%3Cpath fill='%230d1b2a' d='M0,300 L0,260 L120,230 L240,250 L360,200 L480,240 L600,210 L720,230 L840,200 L960,220 L1080,200 L1200,215 L1320,205 L1440,215 L1440,300 Z'/%3E%3C/svg%3E") no-repeat bottom;background-size:cover;z-index:0;pointer-events:none;}
+.sf{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+.sf span{position:absolute;top:-10px;border-radius:50%;animation:fall linear infinite;}
+@keyframes fall{to{transform:translateY(110vh) translateX(20px);opacity:0;}}
+.app{position:relative;z-index:2;display:grid;grid-template-columns:220px 1fr;grid-template-rows:60px 1fr;min-height:100vh;}
+header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(6,14,28,0.93);backdrop-filter:blur(24px);border-bottom:1px solid rgba(94,184,255,0.14);z-index:100;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--frost),var(--azure));clip-path:polygon(50% 0%,100% 100%,0% 100%);flex-shrink:0;}
+.logo-txt{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px;}
+.logo-sub{font-size:9px;color:var(--glacier);letter-spacing:3px;text-transform:uppercase;font-weight:300;}
+.resort-badge{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;color:var(--frost);}
+.wx-badge{display:flex;align-items:center;gap:8px;background:rgba(94,184,255,0.07);border:1px solid rgba(94,184,255,0.18);border-radius:20px;padding:4px 14px;font-size:12px;color:var(--glacier);}
+.wx-badge b{font-family:'JetBrains Mono',monospace;color:var(--frost);}
+.hdr-right{display:flex;align-items:center;gap:14px;}
+.live{width:8px;height:8px;background:var(--go);border-radius:50%;box-shadow:0 0 8px var(--go);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.clk{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--glacier);}
+.bell-wrap{position:relative;cursor:pointer;font-size:18px;}
+.bell-dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--alert);border-radius:50%;border:2px solid var(--deep);animation:pulse 1.5s infinite;}
+.admin-btn{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,215,0,.08));border:1px solid rgba(255,215,0,.35);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--gold);cursor:pointer;transition:all .2s;letter-spacing:.5px;}
+.admin-btn:hover{background:rgba(255,215,0,.24);}
+.admin-btn.active{background:linear-gradient(135deg,rgba(255,215,0,.32),rgba(255,179,71,.2));box-shadow:0 0 16px rgba(255,215,0,.2);}
+nav{background:rgba(6,13,26,.93);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:16px 0;display:flex;flex-direction:column;gap:3px;overflow-y:auto;}
+.nav-sec{padding:8px 16px 2px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,216,240,.35);margin-top:6px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 20px;cursor:pointer;transition:all .18s;border-left:2px solid transparent;font-size:13px;color:rgba(168,216,240,.65);}
+.nav-item:hover{background:rgba(94,184,255,.06);color:var(--snow);}
+.nav-item.active{background:rgba(26,111,255,.12);border-left-color:var(--azure);color:var(--snow);}
+.nav-item .ic{font-size:15px;width:18px;text-align:center;}
+.nbadge{margin-left:auto;background:var(--alert);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
+main{overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:18px;}
+.page{display:none;flex-direction:column;gap:18px;}
+.page.active{display:flex;}
+@keyframes si{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.page.active>*{animation:si .28s ease both;}
+.page.active>*:nth-child(1){animation-delay:0ms;}.page.active>*:nth-child(2){animation-delay:45ms;}.page.active>*:nth-child(3){animation-delay:90ms;}.page.active>*:nth-child(4){animation-delay:135ms;}
+.ptitle{display:flex;align-items:baseline;gap:12px;}
+.ptitle h1{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;line-height:1;}
+.ptitle .psub{font-size:12px;color:var(--glacier);font-weight:300;}
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;}
+.kcard{background:rgba(13,23,48,.75);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;backdrop-filter:blur(10px);transition:transform .18s,border-color .18s;}
+.kcard:hover{transform:translateY(-2px);border-color:rgba(94,184,255,.24);}
+.kcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--frost),transparent);opacity:.35;}
+.klabel{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--glacier);font-weight:500;margin-bottom:7px;}
+.kval{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px;line-height:1;color:var(--snow);}
+.kunit{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--glacier);font-weight:300;margin-left:3px;}
+.kdelta{margin-top:5px;font-size:11px;font-weight:500;}
+.kdelta.up{color:var(--go);}.kdelta.dn{color:var(--alert);}.kdelta.nu{color:var(--glacier);}
+.kico{position:absolute;top:14px;right:14px;font-size:26px;opacity:.13;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;backdrop-filter:blur(10px);}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(94,184,255,.07);}
+.ptit{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;}
+.pb{padding:14px 18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:14px;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(168,216,240,.45);font-weight:500;padding:7px 10px;text-align:left;border-bottom:1px solid rgba(94,184,255,.07);}
+.tbl td{padding:9px 10px;font-size:12px;border-bottom:1px solid rgba(94,184,255,.04);vertical-align:middle;}
+.tbl tr:hover td{background:rgba(94,184,255,.04);}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.4px;}
+.pill.open{background:rgba(61,220,132,.1);color:var(--go);border:1px solid rgba(61,220,132,.22);}
+.pill.closed{background:rgba(255,77,77,.1);color:var(--alert);border:1px solid rgba(255,77,77,.22);}
+.pill.prep{background:rgba(255,179,71,.1);color:var(--warn);border:1px solid rgba(255,179,71,.22);}
+.dd{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;}
+.smeter{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--glacier);}
+.sbar{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
+.sfill{height:100%;background:linear-gradient(90deg,#5eb8ff,#a8d8f0);border-radius:3px;}
+.pbar{height:4px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;margin-top:5px;}
+.pfill{height:100%;border-radius:4px;transition:width .6s ease;}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(94,184,255,.05);font-size:12px;}
+.srow:last-child{border-bottom:none;}
+.sl{color:var(--glacier);}
+.sv{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--frost);}
+.tog{position:relative;width:34px;height:18px;cursor:pointer;flex-shrink:0;}
+.tog input{display:none;}
+.tslider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:20px;transition:.3s;}
+.tslider::before{content:'';position:absolute;width:12px;height:12px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;}
+.tog input:checked+.tslider{background:var(--azure);}
+.tog input:checked+.tslider::before{transform:translateX(16px);}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .18s;letter-spacing:.3px;font-family:'DM Sans',sans-serif;}
+.btn-p{background:linear-gradient(135deg,var(--azure),#0055cc);color:#fff;box-shadow:0 2px 10px rgba(26,111,255,.28);}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(26,111,255,.38);}
+.btn-g{background:rgba(94,184,255,.07);color:var(--frost);border:1px solid rgba(94,184,255,.18);}
+.btn-g:hover{background:rgba(94,184,255,.13);}
+.btn-d{background:rgba(255,77,77,.1);color:var(--alert);border:1px solid rgba(255,77,77,.22);}
+.btn-d:hover{background:rgba(255,77,77,.18);}
+.btn-gold{background:linear-gradient(135deg,rgba(255,215,0,.2),rgba(255,179,71,.15));color:var(--gold);border:1px solid rgba(255,215,0,.3);}
+.btn-gold:hover{background:rgba(255,215,0,.28);}
+.btn-sm{padding:4px 10px;font-size:11px;}
+.lrow{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(8,18,38,.5);border-radius:10px;border:1px solid rgba(94,184,255,.07);transition:border-color .18s;margin-bottom:8px;}
+.lrow:hover{border-color:rgba(94,184,255,.16);}
+.lrow:last-child{margin-bottom:0;}
+.cc{background:rgba(8,18,38,.5);border:1px solid rgba(94,184,255,.09);border-radius:10px;padding:11px;text-align:center;cursor:pointer;transition:all .18s;}
+.cc.on{border-color:rgba(61,220,132,.28);background:rgba(61,220,132,.05);}
+.cc:hover{transform:translateY(-2px);}
+.cdot{width:8px;height:8px;border-radius:50%;margin:4px auto 0;}
+.cdot.on{background:var(--go);box-shadow:0 0 6px var(--go);}
+.cdot.off{background:rgba(255,255,255,.18);}
+.mday{background:rgba(8,18,38,.5);border:1px solid rgba(94,184,255,.09);border-radius:10px;padding:13px;text-align:center;transition:all .18s;}
+.mday:hover{border-color:rgba(94,184,255,.2);transform:translateY(-2px);}
+.mday.today{border-color:rgba(26,111,255,.38);background:rgba(26,111,255,.07);}
+.aitem{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid rgba(94,184,255,.05);}
+.aitem:last-child{border-bottom:none;}
+.aico{font-size:15px;flex-shrink:0;margin-top:1px;}
+.atxt{font-size:12px;line-height:1.45;}
+.atime{font-size:10px;color:var(--glacier);margin-top:2px;}
+.strow{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid rgba(94,184,255,.05);}
+.strow:last-child{border-bottom:none;}
+.ava{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.stinfo{flex:1;}.stname{font-size:13px;font-weight:500;}.strole{font-size:10px;color:var(--glacier);}
+.stzone{font-size:10px;background:rgba(94,184,255,.09);border-radius:6px;padding:2px 8px;color:var(--frost);}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(94,184,255,.18);border-radius:4px;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:linear-gradient(145deg,#0d1a30,#091320);border:1px solid rgba(94,184,255,.18);border-radius:16px;padding:28px;width:520px;max-width:96vw;max-height:88vh;overflow-y:auto;transform:scale(.96) translateY(10px);transition:transform .25s;position:relative;}
+.modal-overlay.show .modal{transform:scale(1) translateY(0);}
+.modal h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:16px;color:var(--frost);}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--glacier);font-size:18px;cursor:pointer;transition:color .18s;}
+.modal-close:hover{color:var(--snow);}
+.login-modal{background:linear-gradient(145deg,#0a1628,#061020);border:1px solid rgba(255,215,0,.2);border-radius:20px;padding:36px;width:360px;text-align:center;}
+.login-modal .lock{font-size:48px;margin-bottom:16px;}
+.login-modal h2{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--gold);margin-bottom:4px;}
+.login-modal p{font-size:12px;color:var(--glacier);margin-bottom:24px;}
+.login-err{background:rgba(255,77,77,.12);border:1px solid rgba(255,77,77,.25);border-radius:8px;padding:8px;font-size:12px;color:var(--alert);margin-bottom:12px;display:none;}
+.frow{margin-bottom:14px;}
+label.flabel{display:block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--glacier);margin-bottom:6px;}
+input.finput,select.finput,textarea.finput{width:100%;background:rgba(94,184,255,.06);border:1px solid rgba(94,184,255,.2);border-radius:8px;padding:8px 12px;color:var(--snow);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .18s;}
+input.finput:focus,select.finput:focus,textarea.finput:focus{border-color:rgba(94,184,255,.45);}
+select.finput option{background:#0d1a30;color:var(--snow);}
+textarea.finput{resize:vertical;min-height:80px;}
+.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.frow-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.admin-section{background:rgba(255,215,0,.03);border:1px solid rgba(255,215,0,.12);border-radius:14px;padding:18px;margin-bottom:16px;}
+.admin-section h3{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.toast-container{position:fixed;top:70px;right:20px;z-index:2000;display:flex;flex-direction:column;gap:8px;}
+.toast{background:rgba(12,24,48,.95);border:1px solid rgba(94,184,255,.2);border-radius:10px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;min-width:280px;backdrop-filter:blur(12px);animation:toastIn .3s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast.success{border-color:rgba(61,220,132,.3);}
+.toast.error{border-color:rgba(255,77,77,.3);}
+.toast.warn{border-color:rgba(255,179,71,.3);}
+input[type=color]{width:36px;height:28px;border:none;border-radius:6px;cursor:pointer;background:none;padding:0;}
+
+/* ═══ ACTUALITÉS ═══ */
+.actu-card{background:rgba(12,22,44,.8);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s,transform .2s;}
+.actu-card:hover{border-color:rgba(94,184,255,.22);transform:translateY(-2px);}
+.actu-header{padding:14px 16px 10px;}
+.actu-cat{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:8px;}
+.cat-evenement{background:rgba(26,111,255,.15);color:var(--frost);border:1px solid rgba(26,111,255,.3);}
+.cat-alerte{background:rgba(255,77,77,.12);color:var(--alert);border:1px solid rgba(255,77,77,.25);}
+.cat-info{background:rgba(61,220,132,.1);color:var(--go);border:1px solid rgba(61,220,132,.22);}
+.cat-travaux{background:rgba(255,179,71,.1);color:var(--warn);border:1px solid rgba(255,179,71,.22);}
+.cat-competition{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.25);}
+.actu-title{font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3;}
+.actu-meta{font-size:11px;color:var(--glacier);margin-bottom:8px;}
+.actu-body{font-size:12px;color:rgba(240,247,255,.7);line-height:1.6;padding:0 16px 14px;}
+.actu-footer{padding:10px 16px;border-top:1px solid rgba(94,184,255,.07);display:flex;align-items:center;justify-content:space-between;}
+.actu-pub{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.actu-pub.pub{background:rgba(61,220,132,.1);color:var(--go);}
+.actu-pub.draft{background:rgba(255,179,71,.1);color:var(--warn);}
+.actu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:900px){.actu-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="sf" id="sf"></div>
+<div class="toast-container" id="toasts"></div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="login-modal">
+    <div class="lock">🔐</div>
+    <h2>Accès Administrateur</h2>
+    <p>Espace réservé au personnel autorisé</p>
+    <div class="login-err" id="loginErr">Identifiants incorrects</div>
+    <div class="frow"><label class="flabel">Utilisateur</label><input class="finput" id="loginUser" type="text" placeholder="Nom d'utilisateur" autocomplete="off"></div>
+    <div class="frow"><label class="flabel">Mot de passe</label><input class="finput" id="loginPass" type="password" placeholder="••••••" autocomplete="off"></div>
+    <button class="btn btn-gold" style="width:100%;padding:10px;font-size:14px;justify-content:center;" onclick="doLogin()">🔑 Se connecter</button>
+    <div style="margin-top:12px;"><button class="btn btn-g" style="width:100%;justify-content:center;font-size:12px;" onclick="closeModal('loginModal')">Annuler</button></div>
+  </div>
+</div>
+
+<!-- GENERIC MODAL -->
+<div class="modal-overlay" id="genericModal">
+  <div class="modal">
+    <h2 id="modalTitle">Titre</h2>
+    <button class="modal-close" onclick="closeModal('genericModal')">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="app">
+<header>
+  <div class="logo">
+    <div class="logo-mark"></div>
+    <div><div class="logo-txt">AlpineOS</div><div class="logo-sub">Station Manager</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:18px;">
+    <div class="resort-badge" id="hdrResort">—</div>
+    <div class="wx-badge">❄️ <b id="hdrNeige">—</b>cm &nbsp;|&nbsp; 🌡️ <b id="hdrTemp">—</b> &nbsp;|&nbsp; 💨 <span id="hdrVent">—</span> km/h</div>
+  </div>
+  <div class="hdr-right">
+    <div class="live"></div>
+    <div class="clk" id="clk">--:--:--</div>
+    <div class="bell-wrap" onclick="showPage('alertes')"><span>🔔</span><div class="bell-dot" id="bellDot"></div></div>
+    <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">⚙️ ADMIN</button>
+  </div>
+</header>
+
+<nav id="mainNav">
+  <div class="nav-sec">Vue d'ensemble</div>
+  <div class="nav-item active" onclick="showPage('dashboard')"><span class="ic">🏔️</span> Tableau de bord</div>
+  <div class="nav-sec">Exploitation</div>
+  <div class="nav-item" onclick="showPage('pistes')"><span class="ic">⛷️</span> Pistes</div>
+  <div class="nav-item" onclick="showPage('remontees')"><span class="ic">🚡</span> Remontées</div>
+  <div class="nav-item" onclick="showPage('enneigement')"><span class="ic">💨</span> Enneigement</div>
+  <div class="nav-sec">Gestion</div>
+  <div class="nav-item" onclick="showPage('personnel')"><span class="ic">👥</span> Personnel</div>
+  <div class="nav-item" onclick="showPage('finances')"><span class="ic">💰</span> Finances</div>
+  <div class="nav-item" onclick="showPage('meteo')"><span class="ic">🌨️</span> Météo</div>
+  <div class="nav-item" onclick="showPage('actualites')"><span class="ic">📰</span> Actualités</div>
+  <div class="nav-sec">Système</div>
+  <div class="nav-item" onclick="showPage('alertes')"><span class="ic">🚨</span> Alertes <span class="nbadge" id="alertBadge">0</span></div>
+  <div id="adminNav" style="display:none">
+    <div class="nav-sec" style="color:rgba(255,215,0,.5)">⚙️ Administration</div>
+    <div class="nav-item" onclick="showPage('admin')"><span class="ic">🛠️</span> <span style="color:var(--gold)">Panneau Admin</span></div>
+  </div>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="ptitle"><h1>Tableau de Bord</h1><span class="psub" id="dashDate">—</span></div>
+  <div class="kgrid">
+    <div class="kcard"><div class="klabel">Visiteurs Aujourd'hui</div><div class="kval" id="kVis">0</div><div class="kdelta up">↑ Journée en cours</div><div class="kico">👤</div></div>
+    <div class="kcard"><div class="klabel">Pistes Ouvertes</div><div class="kval"><span id="kPO">0</span><span class="kunit" id="kPT">/0</span></div><div class="kdelta nu" id="kPD">—</div><div class="kico">⛷️</div></div>
+    <div class="kcard"><div class="klabel">Recettes du Jour</div><div class="kval"><span id="kRec">0</span><span class="kunit">€</span></div><div class="kdelta up">↑ Journée en cours</div><div class="kico">💶</div></div>
+    <div class="kcard"><div class="klabel">Satisfaction Clients</div><div class="kval"><span id="kSat">0</span><span class="kunit">%</span></div><div class="kdelta up" id="kSatD">—</div><div class="kico">⭐</div></div>
+  </div>
+  <div class="g21">
+    <div class="panel">
+      <div class="ph"><div class="ptit">Activité Horaire</div><span style="font-size:10px;color:var(--glacier)">passages/h</span></div>
+      <div class="pb"><div style="display:flex;align-items:flex-end;gap:5px;height:100px;" id="dashChart"></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ptit">État Rapide</div></div>
+      <div class="pb">
+        <div class="srow"><span class="sl">🌡️ Sommet</span><span class="sv" id="qSommet">—</span></div>
+        <div class="srow"><span class="sl">❄️ Neige</span><span class="sv" id="qNeige">—</span></div>
+        <div class="srow"><span class="sl">💨 Vent</span><span class="sv" id="qVent">—</span></div>
+        <div class="srow"><span class="sl">🚡 Remontées</span><span class="sv" id="qRem">—</span></div>
+        <div class="srow"><span class="sl">👷 Staff</span><span class="sv" id="qStaff">—</span></div>
+        <div class="srow"><span class="sl">💨 Canons actifs</span><span class="sv" id="qCanons">—</span></div>
+        <div style="margin-top:12px;"><button class="btn btn-p" style="width:100%" onclick="showPage('alertes')">🚨 Alertes (<span id="qAlertes">0</span>)</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <div class="ph"><div class="ptit">Pistes — Aperçu</div><button class="btn btn-g btn-sm" onclick="showPage('pistes')">Tout voir →</button></div>
+      <div class="pb" style="padding:6px 14px;"><table class="tbl" id="dashPT"></table></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ptit">Alertes Récentes</div><button class="btn btn-g btn-sm" onclick="showPage('alertes')">Tout voir →</button></div>
+      <div class="pb" id="dashAL"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PISTES -->
+<div class="page" id="page-pistes">
+  <div class="ptitle"><h1>Pistes</h1><span class="psub" id="piSub">—</span></div>
+  <div class="kgrid" id="piKpi"></div>
+  <div class="panel">
+    <div class="ph"><div class="ptit">Toutes les Pistes</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-g btn-sm" onclick="openAll()">Tout ouvrir</button>
+        <button class="btn btn-d btn-sm" onclick="closeAll()">Tout fermer</button>
+      </div>
+    </div>
+    <div class="pb" style="padding:6px 14px;"><table class="tbl" id="piTable"></table></div>
+  </div>
+</div>
+
+<!-- REMONTÉES -->
+<div class="page" id="page-remontees">
+  <div class="ptitle"><h1>Remontées Mécaniques</h1><span class="psub" id="remSub">—</span></div>
+  <div class="kgrid" id="remKpi"></div>
+  <div class="g2">
+    <div class="panel"><div class="ph"><div class="ptit">Installations</div></div><div class="pb" id="remList"></div></div>
+    <div class="panel"><div class="ph"><div class="ptit">Équipements</div></div><div class="pb" id="equipList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div></div>
+  </div>
+</div>
+
+<!-- ENNEIGEMENT -->
+<div class="page" id="page-enneigement">
+  <div class="ptitle"><h1>Enneigement Artificiel</h1><span class="psub" id="enSub">—</span></div>
+  <div class="kgrid" id="enKpi"></div>
+  <div class="panel">
+    <div class="ph"><div class="ptit">Canons à Neige</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-p btn-sm" onclick="toggleAllCannons(true)">▶ Tout activer</button>
+        <button class="btn btn-g btn-sm" onclick="toggleAllCannons(false)">⏹ Tout arrêter</button>
+      </div>
+    </div>
+    <div class="pb"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;" id="cannonsGrid"></div></div>
+  </div>
+  <div class="g2">
+    <div class="panel"><div class="ph"><div class="ptit">Conditions</div></div><div class="pb" id="condP"></div></div>
+    <div class="panel"><div class="ph"><div class="ptit">Programme Nuit</div></div><div class="pb" id="progP"></div></div>
+  </div>
+</div>
+
+<!-- PERSONNEL -->
+<div class="page" id="page-personnel">
+  <div class="ptitle"><h1>Personnel</h1><span class="psub" id="persSub">—</span></div>
+  <div class="kgrid" id="persKpi"></div>
+  <div class="g2">
+    <div class="panel"><div class="ph"><div class="ptit">Équipe en Poste</div></div><div class="pb" id="staffList"></div></div>
+    <div class="panel"><div class="ph"><div class="ptit">Planning</div></div><div class="pb" id="planningP"></div></div>
+  </div>
+</div>
+
+<!-- FINANCES -->
+<div class="page" id="page-finances">
+  <div class="ptitle"><h1>Finances</h1><span class="psub">Saison 2024-25</span></div>
+  <div class="kgrid" id="finKpi"></div>
+  <div class="g2">
+    <div class="panel"><div class="ph"><div class="ptit">Recettes</div></div><div class="pb" id="finRev"></div></div>
+    <div class="panel"><div class="ph"><div class="ptit">Charges</div></div><div class="pb" id="finCh"></div></div>
+  </div>
+  <div class="panel"><div class="ph"><div class="ptit">Historique 14 jours</div></div><div class="pb"><div id="finChart" style="height:130px;display:flex;align-items:flex-end;gap:5px;"></div></div></div>
+</div>
+
+<!-- MÉTÉO -->
+<div class="page" id="page-meteo">
+  <div class="ptitle"><h1>Météo</h1><span class="psub" id="metSub">—</span></div>
+  <div class="panel"><div class="ph"><div class="ptit">Prévisions 5 Jours</div></div><div class="pb"><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;" id="metFc"></div></div></div>
+  <div class="g2">
+    <div class="panel"><div class="ph"><div class="ptit">Mesures Temps Réel</div></div><div class="pb" id="metReal"></div></div>
+    <div class="panel"><div class="ph"><div class="ptit">Manteau Neigeux</div></div><div class="pb" id="metSnow"></div></div>
+  </div>
+</div>
+
+<!-- ══════════ ACTUALITÉS ══════════ -->
+<div class="page" id="page-actualites">
+  <div class="ptitle"><h1>Actualités</h1><span class="psub" id="actSub">—</span></div>
+  <div class="kgrid">
+    <div class="kcard"><div class="klabel">Total Articles</div><div class="kval" id="kActTotal">0</div><div class="kdelta nu">Toutes catégories</div><div class="kico">📰</div></div>
+    <div class="kcard"><div class="klabel">Publiés</div><div class="kval" id="kActPub">0</div><div class="kdelta up">↑ En ligne</div><div class="kico">✅</div></div>
+    <div class="kcard"><div class="klabel">Brouillons</div><div class="kval" id="kActDraft">0</div><div class="kdelta nu">En attente</div><div class="kico">📝</div></div>
+    <div class="kcard"><div class="klabel">Ce mois</div><div class="kval" id="kActMonth">0</div><div class="kdelta up">Nouveaux</div><div class="kico">📅</div></div>
+  </div>
+  <div class="panel">
+    <div class="ph">
+      <div class="ptit">Tous les Articles</div>
+      <div style="display:flex;gap:8px;">
+        <select id="filterCat" class="finput" style="width:140px;padding:5px 10px;font-size:12px;" onchange="renderActualites()">
+          <option value="">Toutes catégories</option>
+          <option value="evenement">Événement</option>
+          <option value="alerte">Alerte</option>
+          <option value="info">Information</option>
+          <option value="travaux">Travaux</option>
+          <option value="competition">Compétition</option>
+        </select>
+        <button class="btn btn-p btn-sm" onclick="openNewActu()">+ Nouvel article</button>
+      </div>
+    </div>
+    <div class="pb">
+      <div class="actu-grid" id="actuGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTES -->
+<div class="page" id="page-alertes">
+  <div class="ptitle"><h1>Alertes</h1><span class="psub" id="alSub">—</span></div>
+  <div class="panel">
+    <div class="ph"><div class="ptit">Alertes Actives</div><button class="btn btn-g btn-sm" onclick="acquitAll()">Tout acquitter</button></div>
+    <div class="pb" id="activeAlerts"></div>
+  </div>
+  <div class="panel">
+    <div class="ph"><div class="ptit">Historique</div></div>
+    <div class="pb" id="histAlerts"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div class="ptitle"><h1 style="color:var(--gold)">⚙️ Panneau Admin</h1><span class="psub">Modification complète des données</span></div>
+
+  <div class="admin-section">
+    <h3>🏔️ Station</h3>
+    <div class="frow-3">
+      <div class="frow"><label class="flabel">Nom station</label><input class="finput" id="aStaNom" type="text"></div>
+      <div class="frow"><label class="flabel">Altitude max (m)</label><input class="finput" id="aStaAlt" type="number"></div>
+      <div class="frow"><label class="flabel">Capacité/jour</label><input class="finput" id="aStaCap" type="number"></div>
+    </div>
+    <div class="frow-3">
+      <div class="frow"><label class="flabel">Visiteurs aujourd'hui</label><input class="finput" id="aVis" type="number"></div>
+      <div class="frow"><label class="flabel">Recettes du jour (€)</label><input class="finput" id="aRec" type="number"></div>
+      <div class="frow"><label class="flabel">Satisfaction (%)</label><input class="finput" id="aSat" type="number" min="0" max="100"></div>
+    </div>
+    <div class="frow-2">
+      <div class="frow"><label class="flabel">Tarif Journée Adulte (€)</label><input class="finput" id="aTarAdulte" type="number"></div>
+      <div class="frow"><label class="flabel">Tarif Journée Enfant (€)</label><input class="finput" id="aTarEnfant" type="number"></div>
+    </div>
+    <div class="frow-2">
+      <div class="frow"><label class="flabel">Tarif Semaine Adulte (€)</label><input class="finput" id="aTarSemA" type="number"></div>
+      <div class="frow"><label class="flabel">Tarif Semaine Enfant (€)</label><input class="finput" id="aTarSemE" type="number"></div>
+    </div>
+    <button class="btn btn-gold" onclick="saveStation()">💾 Enregistrer</button>
+  </div>
+
+  <div class="admin-section">
+    <h3>🌡️ Météo</h3>
+    <div class="frow-3">
+      <div class="frow"><label class="flabel">Temp. village (°C)</label><input class="finput" id="aTVil" type="number"></div>
+      <div class="frow"><label class="flabel">Temp. sommet (°C)</label><input class="finput" id="aTSom" type="number"></div>
+      <div class="frow"><label class="flabel">Vent (km/h)</label><input class="finput" id="aVent" type="number"></div>
+    </div>
+    <div class="frow-3">
+      <div class="frow"><label class="flabel">Neige fraîche 48h (cm)</label><input class="finput" id="aNFr" type="number"></div>
+      <div class="frow"><label class="flabel">Hauteur neige sommet (cm)</label><input class="finput" id="aNSom" type="number"></div>
+      <div class="frow"><label class="flabel">Risque avalanche (1-5)</label><input class="finput" id="aAval" type="number" min="1" max="5"></div>
+    </div>
+    <div class="frow-2">
+      <div class="frow"><label class="flabel">Qualité neige</label><select class="finput" id="aQual"><option>Poudreuse ★★★</option><option>Bonne ★★☆</option><option>Tassée ★☆☆</option><option>Transformée ☆☆☆</option><option>Gelée ⚠️</option></select></div>
+      <div class="frow"><label class="flabel">Visibilité</label><select class="finput" id="aVis2"><option>Excellente (>15km)</option><option>Bonne (>10km)</option><option>Modérée (5-10km)</option><option>Réduite (<5km)</option><option>Mauvaise</option></select></div>
+    </div>
+    <label class="flabel">Prévisions 5 jours</label>
+    <div id="aMeteoRows"></div>
+    <button class="btn btn-gold" onclick="saveMeteo()" style="margin-top:10px;">💾 Enregistrer météo</button>
+  </div>
+
+  <div class="admin-section">
+    <h3>⛷️ Pistes</h3>
+    <div id="aPiRows"></div>
+    <button class="btn btn-p btn-sm" onclick="openAddPiste()" style="margin-top:8px;">+ Ajouter piste</button>
+  </div>
+
+  <div class="admin-section">
+    <h3>🚡 Remontées</h3>
+    <div id="aRemRows"></div>
+    <button class="btn btn-p btn-sm" onclick="openAddRem()" style="margin-top:8px;">+ Ajouter remontée</button>
+  </div>
+
+  <div class="admin-section">
+    <h3>💨 Canons à Neige</h3>
+    <div id="aCanRows"></div>
+    <button class="btn btn-p btn-sm" onclick="openAddCanon()" style="margin-top:8px;">+ Ajouter canon</button>
+  </div>
+
+  <div class="admin-section">
+    <h3>👥 Personnel</h3>
+    <div id="aStaRows"></div>
+    <button class="btn btn-p btn-sm" onclick="openAddStaff()" style="margin-top:8px;">+ Ajouter employé</button>
+  </div>
+
+  <div class="admin-section">
+    <h3>💰 Finances</h3>
+    <div class="frow-3">
+      <div class="frow"><label class="flabel">CA Saison (€)</label><input class="finput" id="aCA" type="number"></div>
+      <div class="frow"><label class="flabel">Charges Saison (€)</label><input class="finput" id="aCH" type="number"></div>
+      <div class="frow"><label class="flabel">Forfaits vendus</label><input class="finput" id="aForf" type="number"></div>
+    </div>
+    <button class="btn btn-gold" onclick="saveFinances()">💾 Enregistrer</button>
+  </div>
+
+  <div class="admin-section">
+    <h3>🚨 Alertes</h3>
+    <div id="aAlRows"></div>
+    <div style="margin-top:12px;"><label class="flabel">Créer une alerte</label>
+      <div class="frow-3">
+        <select class="finput" id="aAlType"><option value="⚠️">⚠️ Avertissement</option><option value="🔧">🔧 Maintenance</option><option value="❄️">❄️ Enneigement</option><option value="🚑">🚑 Secours</option><option value="⛔">⛔ Danger</option><option value="ℹ️">ℹ️ Info</option></select>
+        <div style="grid-column:span 2"><input class="finput" id="aAlTxt" type="text" placeholder="Description..."></div>
+      </div>
+      <button class="btn btn-d btn-sm" onclick="addAlert()">🚨 Créer l'alerte</button>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:10px;">
+    <button class="btn btn-d" onclick="resetAll()">🗑️ Réinitialiser toutes les données</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+const SKEY='alpineOS_state';
+let S,adminLoggedIn=false,nid=100;
+const DC={verte:'#3ddc84',bleue:'#1a6fff',rouge:'#ff4d4d',noire:'#e0e0e0'};
+const DL={verte:'Verte',bleue:'Bleue',rouge:'Rouge',noire:'Noire'};
+
+const DEFAULT={
+  station:{nom:"LES SOMMETS",alt:2850,cap:4500,visiteurs:2847,recettes:41200,satisf:94,tarifs:{adulte:42,enfant:28,semA:210,semE:148}},
+  meteo:{tempVillage:-3,tempSommet:-12,vent:12,neigeFraiche:22,neigeSommet:185,avalanche:2,qualiteNeige:"Poudreuse ★★★",visibilite:"Bonne (>10km)",
+    previsions:[
+      {jour:"Aujourd'hui",ico:"🌨️",tempMax:-8,tempMin:-14,neige:15},
+      {jour:"Mardi",ico:"⛅",tempMax:-5,tempMin:-11,neige:5},
+      {jour:"Mercredi",ico:"☀️",tempMax:-2,tempMin:-8,neige:0},
+      {jour:"Jeudi",ico:"🌨️",tempMax:-10,tempMin:-17,neige:25},
+      {jour:"Vendredi",ico:"🌨️",tempMax:-12,tempMin:-19,neige:30}
+    ]
+  },
+  pistes:[
+    {id:1,nom:"Étoile du Nord",diff:"verte",long:"2.1 km",den:"310m",neige:78,open:true},
+    {id:2,nom:"Pré Fleuri",diff:"verte",long:"1.4 km",den:"180m",neige:82,open:true},
+    {id:3,nom:"Chamois Express",diff:"bleue",long:"3.2 km",den:"520m",neige:92,open:true},
+    {id:4,nom:"Vallée Blanche",diff:"bleue",long:"4.1 km",den:"640m",neige:88,open:true},
+    {id:5,nom:"Diable Noir",diff:"rouge",long:"2.8 km",den:"480m",neige:45,open:false},
+    {id:6,nom:"Face Nord",diff:"rouge",long:"1.9 km",den:"390m",neige:67,open:true},
+    {id:7,nom:"L'Abîme",diff:"noire",long:"1.6 km",den:"560m",neige:38,open:false},
+    {id:8,nom:"Couloir des Aigles",diff:"noire",long:"2.2 km",den:"710m",neige:51,open:false}
+  ],
+  remontees:[
+    {id:1,nom:"Télécabine des Sommets",type:"télécabine",places:10,vitesse:5,capa:2400,open:true,note:""},
+    {id:2,nom:"Télésiège Aiglon",type:"télésiège",places:6,vitesse:2.5,capa:900,open:true,note:"⚠ Vent"},
+    {id:3,nom:"Télésiège du Glacier",type:"télésiège",places:4,vitesse:4.5,capa:1800,open:true,note:""},
+    {id:4,nom:"Téleski des Marmots",type:"téleski",places:2,vitesse:3,capa:600,open:true,note:""},
+    {id:5,nom:"Télécabine Panorama",type:"télécabine",places:8,vitesse:0,capa:0,open:false,note:"Maintenance"}
+  ],
+  equip:[
+    {nom:"Dameuse #1",type:"PistenBully 400",heure:220,hmax:1000},
+    {nom:"Dameuse #2",type:"Kässbohrer",heure:580,hmax:1000},
+    {nom:"Dameuse #3",type:"PistenBully 600",heure:880,hmax:1000},
+    {nom:"Héliski",type:"AS350 B3e",heure:350,hmax:1000},
+    {nom:"Snowpark",type:"Modules jumps",heure:1000,hmax:1000},
+    {nom:"Radar météo",type:"Vaisala WXT536",heure:100,hmax:1000}
+  ],
+  canons:[
+    {id:"C-01",zone:"Diable Noir",on:true},{id:"C-02",zone:"Diable Noir",on:true},
+    {id:"C-03",zone:"L'Abîme",on:true},{id:"C-04",zone:"L'Abîme",on:false},
+    {id:"C-05",zone:"Face Nord",on:true},{id:"C-06",zone:"Face Nord",on:true},
+    {id:"C-07",zone:"Chamois",on:false},{id:"C-08",zone:"Chamois",on:false},
+    {id:"C-09",zone:"Glacier",on:true},{id:"C-10",zone:"Glacier",on:false},
+    {id:"C-11",zone:"Sommets",on:true},{id:"C-12",zone:"Sommets",on:true},
+    {id:"C-13",zone:"Village",on:false},{id:"C-14",zone:"Village",on:false},
+    {id:"C-15",zone:"Vallée",on:false},{id:"C-16",zone:"Vallée",on:false}
+  ],
+  staff:[
+    {id:1,nom:"Marc Lefevre",role:"Pisteur-Secouriste Chef",zone:"Secteur Sommet",statut:"present",couleur:"#1a6fff"},
+    {id:2,nom:"Sophie Bernard",role:"Monitrice ESF — Niv. 3",zone:"Piste Verte",statut:"present",couleur:"#3ddc84"},
+    {id:3,nom:"Thomas Petit",role:"Technicien Remontées",zone:"TS Aiglon",statut:"intervention",couleur:"#ffb347"},
+    {id:4,nom:"Amélie Martin",role:"Accueil / Caisse",zone:"Billetterie",statut:"present",couleur:"#9b59b6"},
+    {id:5,nom:"Julien Dupont",role:"Conducteur Dameuse",zone:"Nuit",statut:"repos",couleur:"#e74c3c"},
+    {id:6,nom:"Claire Garnier",role:"Monitrice ESF — Niv. 1",zone:"Espace débutants",statut:"present",couleur:"#1abc9c"}
+  ],
+  finances:{ca:2400000,charges:1600000,forfaits:18420,
+    revenus:[{label:"Forfaits ski",val:1240000},{label:"Location matériel",val:380000},{label:"École de ski",val:290000},{label:"Restauration",val:240000},{label:"Hébergement",val:140000},{label:"Autres",val:110000}],
+    chargesDetail:[{label:"Masse salariale",val:680000},{label:"Énergie remontées",val:310000},{label:"Maintenance",val:240000},{label:"Eau enneigement",val:180000},{label:"Assurances",val:120000},{label:"Autres frais",val:70000}]
+  },
+  alerts:[
+    {id:1,ico:"⚠️",txt:"Rafale de vent > 50 km/h — Télésiège Aiglon, vitesse réduite",time:"Il y a 14 min",active:true},
+    {id:2,ico:"🔧",txt:"Maintenance préventive requise — Dameuse #3 (880h atteintes)",time:"Il y a 1h",active:true},
+    {id:3,ico:"❄️",txt:"Enneigement insuffisant piste 'L'Abîme' (38cm < 60cm min.)",time:"Il y a 3h",active:true}
+  ],
+  histAlerts:[
+    {id:10,ico:"✅",txt:"Télésiège Aiglon — Retour vitesse normale",time:"Hier 16:45"},
+    {id:11,ico:"✅",txt:"Piste Chamois Express rouverte",time:"Hier 14:12"}
+  ],
+  actualites:[
+    {id:1,titre:"Ouverture de la saison — Conditions exceptionnelles",categorie:"info",resume:"La saison 2024-25 débute dans des conditions idéales avec 185cm de neige au sommet et des températures parfaites. Toutes les pistes principales sont ouvertes.",contenu:"La saison 2024-25 s'ouvre dans des conditions exceptionnelles. Après des chutes de neige abondantes en novembre et décembre, le domaine skiable affiche un enneigement record de 185cm au sommet et 92cm à mi-station. Les équipes de damage ont travaillé toute la nuit pour garantir des pistes parfaites dès l'ouverture.\n\nCette saison, de nouveaux équipements ont été mis en place : modernisation du télésiège Aiglon, création d'un nouveau snowpark et installation de 4 nouveaux canons à neige dans le secteur Vallée.",date:"15 Décembre 2024",auteur:"Direction",publie:true},
+    {id:2,titre:"Compétition de ski alpin — Coupe Régionale",categorie:"competition",resume:"Le 20 janvier, notre station accueille la Coupe Régionale de ski alpin. Venez encourager les compétiteurs !",contenu:"Notre station a l'honneur d'accueillir la Coupe Régionale de ski alpin le samedi 20 janvier 2025. La compétition se déroulera sur la piste rouge 'Face Nord' avec des épreuves de slalom géant dès 9h00.\n\nLa journée sera également animée par un village exposants au pied des pistes. Entrée gratuite pour les spectateurs.",date:"10 Janvier 2025",auteur:"Service Événements",publie:true},
+    {id:3,titre:"Travaux sur le Télésiège Aiglon — Fermeture temporaire",categorie:"travaux",resume:"Le télésiège Aiglon sera fermé les lundis et mardis matin pour révision. Ouverture à 10h ces jours-là.",contenu:"Dans le cadre de la maintenance préventive annuelle, le télésiège Aiglon sera soumis à des travaux de révision chaque lundi et mardi matin de 8h à 10h jusqu'au 15 février.\n\nPendant cette période, la télécabine des Sommets sera renforcée avec des cabines supplémentaires pour absorber le flux. Nous nous excusons pour la gêne occasionnée.",date:"8 Janvier 2025",auteur:"Service Technique",publie:true},
+    {id:4,titre:"Nocturne ski — Vendredi soir sous les étoiles",categorie:"evenement",resume:"Tous les vendredis en février, profitez de la piste éclairée 'Étoile du Nord' de 18h à 22h pour des descentes nocturnes inoubliables.",contenu:"À partir du 7 février, chaque vendredi soir la piste 'Étoile du Nord' sera éclairée de 18h à 22h pour des descentes nocturnes. Un vin chaud vous attendra en bas des pistes !\n\nTarif : forfait soirée à 15€ adulte, 10€ enfant. Réservation recommandée à l'accueil.",date:"5 Janvier 2025",auteur:"Service Animation",publie:false}
+  ]
+};
+
+function loadState(){
+  const d=localStorage.getItem(SKEY);
+  try{ S=d?JSON.parse(d):JSON.parse(JSON.stringify(DEFAULT)); }
+  catch{ S=JSON.parse(JSON.stringify(DEFAULT)); }
+  // Migration : garantir que tous les champs critiques existent
+  if(!S.actualites)  S.actualites  = JSON.parse(JSON.stringify(DEFAULT.actualites));
+  if(!S.alerts)      S.alerts      = JSON.parse(JSON.stringify(DEFAULT.alerts));
+  if(!S.histAlerts)  S.histAlerts  = JSON.parse(JSON.stringify(DEFAULT.histAlerts));
+  if(!S.pistes)      S.pistes      = JSON.parse(JSON.stringify(DEFAULT.pistes));
+  if(!S.remontees)   S.remontees   = JSON.parse(JSON.stringify(DEFAULT.remontees));
+  if(!S.canons)      S.canons      = JSON.parse(JSON.stringify(DEFAULT.canons));
+  if(!S.staff)       S.staff       = JSON.parse(JSON.stringify(DEFAULT.staff));
+  if(!S.equip)       S.equip       = JSON.parse(JSON.stringify(DEFAULT.equip));
+  if(!S.finances)    S.finances    = JSON.parse(JSON.stringify(DEFAULT.finances));
+  if(!S.meteo)       S.meteo       = JSON.parse(JSON.stringify(DEFAULT.meteo));
+  if(!S.station)     S.station     = JSON.parse(JSON.stringify(DEFAULT.station));
+  if(!S.station.tarifs) S.station.tarifs = {adulte:42,enfant:28,semA:210,semE:148};
+  if(!S.meteo.previsions) S.meteo.previsions = JSON.parse(JSON.stringify(DEFAULT.meteo.previsions));
+}
+function saveState(){localStorage.setItem(SKEY,JSON.stringify(S));}
+function resetAll(){if(!confirm("Réinitialiser toutes les données ?"))return;localStorage.removeItem(SKEY);S=JSON.parse(JSON.stringify(DEFAULT));saveState();renderAll();toast("Données réinitialisées","warn");}
+
+// CLOCK
+setInterval(()=>document.getElementById('clk').textContent=new Date().toLocaleTimeString('fr-FR'),1000);
+
+// SNOWFLAKES
+const sfEl=document.getElementById('sf');
+for(let i=0;i<35;i++){const s=document.createElement('span');const sz=Math.random()*3+1;s.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:rgba(255,255,255,${Math.random()*.45+.15});border-radius:50%;animation-duration:${Math.random()*8+6}s;animation-delay:${Math.random()*12}s;`;sfEl.appendChild(s);}
+
+// NAV
+function showPage(id){
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(e=>{if(e.getAttribute('onclick')&&e.getAttribute('onclick').includes("'"+id+"'"))e.classList.add('active');});
+  renderPage(id);
+}
+function renderPage(id){({dashboard:renderDashboard,pistes:renderPistes,remontees:renderRemontees,enneigement:renderEnneigement,personnel:renderPersonnel,finances:renderFinances,meteo:renderMeteo,actualites:renderActualites,alertes:renderAlertes,admin:renderAdmin})[id]?.();}
+function renderAll(){updateHeader();renderDashboard();updateAlertBadge();}
+
+// HEADER
+function updateHeader(){
+  document.getElementById('hdrResort').textContent=S.station.nom;
+  document.getElementById('hdrTemp').textContent=S.meteo.tempVillage+'°C';
+  document.getElementById('hdrNeige').textContent=S.meteo.neigeSommet;
+  document.getElementById('hdrVent').textContent=S.meteo.vent;
+  document.getElementById('dashDate').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('metSub').textContent='Station '+S.station.nom+' · Alt. '+S.station.alt+'m';
+  document.getElementById('alSub').textContent=S.alerts.filter(a=>a.active).length+' alerte(s) active(s)';
+}
+function updateAlertBadge(){const n=S.alerts.filter(a=>a.active).length;document.getElementById('alertBadge').textContent=n;document.getElementById('bellDot').style.display=n>0?'block':'none';if(document.getElementById('qAlertes'))document.getElementById('qAlertes').textContent=n;}
+
+// HELPERS
+function kpi(l,v,u,i,d,dc){return`<div class="kcard"><div class="klabel">${l}</div><div class="kval">${v}<span class="kunit">${u||''}</span></div><div class="kdelta ${dc||'nu'}">${d||''}</div><div class="kico">${i}</div></div>`;}
+function srow(l,v){return`<div class="srow"><span class="sl">${l}</span><span class="sv">${v}</span></div>`;}
+function pill(open){return open?'<span class="pill open">● Ouverte</span>':'<span class="pill closed">✕ Fermée</span>';}
+
+// DASHBOARD
+function renderDashboard(){
+  updateHeader();
+  document.getElementById('kVis').textContent=S.station.visiteurs.toLocaleString('fr-FR');
+  document.getElementById('kRec').textContent=S.station.recettes.toLocaleString('fr-FR');
+  document.getElementById('kSat').textContent=S.station.satisf;
+  const sat=S.station.satisf;
+  document.getElementById('kSatD').textContent=sat>=90?'↑ Excellent':sat>=75?'→ Bon':'↓ À améliorer';
+  document.getElementById('kSatD').className='kdelta '+(sat>=75?'up':sat>=60?'nu':'dn');
+  const po=S.pistes.filter(p=>p.open).length;
+  document.getElementById('kPO').textContent=po;document.getElementById('kPT').textContent='/'+S.pistes.length;
+  document.getElementById('kPD').textContent=(S.pistes.length-po)+' fermée(s)';
+  document.getElementById('qSommet').textContent=S.meteo.tempSommet+'°C';
+  document.getElementById('qNeige').textContent=S.meteo.neigeSommet+' cm';
+  document.getElementById('qVent').textContent=S.meteo.vent+' km/h';
+  document.getElementById('qRem').textContent=S.remontees.filter(r=>r.open).length+'/'+S.remontees.length;
+  document.getElementById('qStaff').textContent=S.staff.filter(s=>s.statut!=='repos').length+'/'+S.staff.length;
+  document.getElementById('qCanons').textContent=S.canons.filter(c=>c.on).length+' actifs';
+  const vals=[120,380,720,940,860,1050,980,880,650,320],hrs=['8h','9h','10h','11h','12h','13h','14h','15h','16h','17h'],mx=Math.max(...vals);
+  document.getElementById('dashChart').innerHTML=hrs.map((h,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;"><div style="width:100%;height:${Math.round(vals[i]/mx*85)}px;background:linear-gradient(180deg,var(--frost),var(--azure));border-radius:3px 3px 0 0;min-height:3px;"></div><div style="font-size:9px;color:var(--glacier)">${h}</div></div>`).join('');
+  document.getElementById('dashPT').innerHTML='<tr><th>Piste</th><th>Diff.</th><th>Neige</th><th>Statut</th></tr>'+S.pistes.slice(0,5).map(p=>`<tr><td>${p.nom}</td><td><span class="dd" style="background:${DC[p.diff]}"></span>${DL[p.diff]}</td><td><div class="smeter"><span>${p.neige}cm</span><div class="sbar"><div class="sfill" style="width:${p.neige}%"></div></div></div></td><td>${pill(p.open)}</td></tr>`).join('');
+  const act=S.alerts.filter(a=>a.active);
+  document.getElementById('dashAL').innerHTML=act.length?act.slice(0,3).map(a=>`<div class="aitem"><div class="aico">${a.ico}</div><div><div class="atxt">${a.txt}</div><div class="atime">${a.time}</div></div></div>`).join(''):`<div style="color:var(--glacier);font-size:12px;padding:8px 0;">✅ Aucune alerte active</div>`;
+  updateAlertBadge();
+}
+
+// PISTES
+function renderPistes(){
+  const v=S.pistes.filter(p=>p.diff==='verte'),b=S.pistes.filter(p=>p.diff==='bleue'),r=S.pistes.filter(p=>p.diff==='rouge'),n=S.pistes.filter(p=>p.diff==='noire');
+  document.getElementById('piSub').textContent=S.pistes.length+' pistes · '+S.pistes.filter(p=>p.open).length+' ouvertes';
+  document.getElementById('piKpi').innerHTML=kpi('Vertes',v.filter(p=>p.open).length,'/'+v.length,'🟢',v.filter(p=>p.open).length+'/'+v.length,'up')+kpi('Bleues',b.filter(p=>p.open).length,'/'+b.length,'🔵',b.filter(p=>p.open).length+'/'+b.length,'up')+kpi('Rouges',r.filter(p=>p.open).length,'/'+r.length,'🔴',r.filter(p=>p.open).length+'/'+r.length,'nu')+kpi('Noires',n.filter(p=>p.open).length,'/'+n.length,'⚫',n.filter(p=>p.open).length+'/'+n.length,'dn');
+  document.getElementById('piTable').innerHTML='<tr><th>Piste</th><th>Diff.</th><th>Long.</th><th>Dén.</th><th>Enneigement</th><th>Statut</th><th>Ouvert</th></tr>'+S.pistes.map(p=>`<tr><td><strong>${p.nom}</strong></td><td><span class="dd" style="background:${DC[p.diff]}"></span>${DL[p.diff]}</td><td style="font-size:11px;font-family:monospace">${p.long}</td><td style="font-size:11px;font-family:monospace">${p.den}</td><td><div class="smeter"><span>${p.neige}cm</span><div class="sbar" style="min-width:55px"><div class="sfill" style="width:${Math.min(p.neige,100)}%;${p.neige<50?'background:linear-gradient(90deg,var(--alert),#ff8888)':''}"></div></div></div></td><td>${pill(p.open)}</td><td><label class="tog"><input type="checkbox" ${p.open?'checked':''} onchange="togglePiste(${p.id},this.checked)"><div class="tslider"></div></label></td></tr>`).join('');
+}
+function togglePiste(id,v){const p=S.pistes.find(x=>x.id===id);if(p){p.open=v;saveState();renderPistes();renderDashboard();toast((v?'✅ Ouverte : ':'❌ Fermée : ')+p.nom,v?'success':'warn');}}
+function openAll(){S.pistes.forEach(p=>p.open=true);saveState();renderPistes();renderDashboard();toast('✅ Toutes les pistes ouvertes','success');}
+function closeAll(){S.pistes.forEach(p=>p.open=false);saveState();renderPistes();renderDashboard();toast('❌ Toutes les pistes fermées','warn');}
+
+// REMONTÉES
+function renderRemontees(){
+  const op=S.remontees.filter(r=>r.open).length,cap=S.remontees.filter(r=>r.open).reduce((a,r)=>a+r.capa,0);
+  document.getElementById('remSub').textContent=S.remontees.length+' installations · '+op+' en service';
+  document.getElementById('remKpi').innerHTML=kpi('Capacité/h',cap.toLocaleString('fr-FR'),'pers.','🚡','Service normal','up')+kpi('En service',op,'/'+S.remontees.length,'✅','Opérationnelles','nu')+kpi('Taux utilisation','68','%','📊','Flux modéré','nu')+kpi('Incidents',S.alerts.filter(a=>a.active&&a.ico==='⚠️').length,'','⚠️','Actifs','dn');
+  document.getElementById('remList').innerHTML=S.remontees.map(r=>{const ico=r.type==='télécabine'?'🚡':r.type==='télésiège'?'🪑':'🎿';const pct=r.vitesse>0?Math.min(100,Math.round(r.vitesse/5*100)):0;return`<div class="lrow" ${!r.open?'style="opacity:.55"':''}><div style="font-size:18px">${ico}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${r.nom}${r.note?` <span style="color:var(--warn);font-size:11px">${r.note}</span>`:''}</div><div style="font-size:10px;color:var(--glacier)">${r.places} places · ${r.capa} pers/h</div><div class="pbar" style="margin-top:5px;width:70px"><div class="pfill" style="width:${pct}%;background:linear-gradient(90deg,var(--azure),var(--frost))"></div></div></div><div style="text-align:right;margin-right:10px"><div style="font-family:monospace;font-size:17px;color:${r.open?'var(--frost)':'var(--alert)'}">${r.open?r.capa:'—'}</div><div style="font-size:9px;color:var(--glacier)">PERS/H</div></div><label class="tog"><input type="checkbox" ${r.open?'checked':''} onchange="toggleRem(${r.id},this.checked)"><div class="tslider"></div></label></div>`;}).join('');
+  document.getElementById('equipList').innerHTML=S.equip.map(e=>{const pct=Math.round(e.heure/e.hmax*100),col=pct>80?'var(--warn)':pct>50?'var(--azure)':'var(--go)';return`<div style="background:rgba(8,18,38,.5);border:1px solid ${pct>80?'rgba(255,179,71,.25)':'var(--border)'};border-radius:9px;padding:12px;"><div style="font-size:12px;font-weight:500">${e.nom}</div><div style="font-size:10px;color:var(--glacier);margin-bottom:6px">${e.type}</div><div class="pbar"><div class="pfill" style="width:${pct}%;background:${col}"></div></div><div style="font-size:11px;color:${col};margin-top:4px">${pct>80?'⚠ ':'✓ '}${e.heure}h/${e.hmax}h</div></div>`;}).join('');
+}
+function toggleRem(id,v){const r=S.remontees.find(x=>x.id===id);if(r){r.open=v;saveState();renderRemontees();toast((v?'🚡 Mise en service : ':'⏹ Arrêtée : ')+r.nom,v?'success':'warn');}}
+
+// ENNEIGEMENT
+function renderEnneigement(){
+  const on=S.canons.filter(c=>c.on).length;
+  document.getElementById('enSub').textContent=S.canons.length+' canons · '+on+' actifs';
+  document.getElementById('enKpi').innerHTML=kpi('Canons Actifs',on,'/'+S.canons.length,'💨','Cette nuit','up')+kpi('Neige 24h','1 240','m³','❄️','Produite','up')+kpi('Conso. Eau','840','m³/h','💧','Réservoir 78%','nu')+kpi('Temp. Bulbe',S.meteo.tempVillage-1,'°C','🌡️',S.meteo.tempVillage-1<=-4?'Idéale ✓':'Limite',S.meteo.tempVillage-1<=-4?'up':'dn');
+  document.getElementById('cannonsGrid').innerHTML=S.canons.map((c,i)=>`<div class="cc ${c.on?'on':''}" onclick="toggleCanon(${i})"><div style="font-size:22px">${c.on?'💨':'⚙️'}</div><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--glacier)">${c.id}</div><div style="font-size:11px;font-weight:500;margin:2px 0">${c.zone}</div><div class="cdot ${c.on?'on':'off'}"></div></div>`).join('');
+  document.getElementById('condP').innerHTML=srow('Temp. extérieure',S.meteo.tempVillage+'°C')+srow('Temp. bulbe',(S.meteo.tempVillage-1)+'°C')+srow('Humidité','62%')+srow('Vent',S.meteo.vent+' km/h')+srow('Pression','4.2 bar')+srow('Réservoir','78%');
+  document.getElementById('progP').innerHTML=srow('Début','23:00')+srow('Fin prévue','06:30')+srow('Zones prio','Pistes < 60cm')+srow('Volume cible','1 800 m³')+srow('Canons actifs',on+'/'+S.canons.length)+srow('Statut','<span style="color:var(--go)">Actif ✓</span>');
+}
+function toggleCanon(i){S.canons[i].on=!S.canons[i].on;saveState();renderEnneigement();toast((S.canons[i].on?'💨 Activé : ':'⏹ Arrêté : ')+S.canons[i].id,S.canons[i].on?'success':'warn');}
+function toggleAllCannons(v){S.canons.forEach(c=>c.on=v);saveState();renderEnneigement();toast(v?'💨 Tous canons activés':'⏹ Tous canons arrêtés',v?'success':'warn');}
+
+// PERSONNEL
+function renderPersonnel(){
+  const pr=S.staff.filter(s=>s.statut!=='repos');
+  document.getElementById('persSub').textContent=S.staff.length+' employés · '+pr.length+' en poste';
+  document.getElementById('persKpi').innerHTML=kpi('Total',S.staff.length,'','👥',pr.length+'/'+S.staff.length+' en poste','up')+kpi('Pisteurs',S.staff.filter(s=>s.role.toLowerCase().includes('pisteur')).length,'','🚑','Sécurité','nu')+kpi('Moniteurs ESF',S.staff.filter(s=>s.role.toLowerCase().includes('monit')).length,'','⛷️','École de ski','up')+kpi('En poste',pr.length,'/'+S.staff.length,'✅','Aujourd\'hui','up');
+  const sc={present:'var(--go)',intervention:'var(--warn)',repos:'var(--glacier)'};
+  const sl={present:'● En poste',intervention:'⚠ Intervention',repos:'◌ Off'};
+  document.getElementById('staffList').innerHTML=S.staff.map(s=>`<div class="strow"><div class="ava" style="background:${s.couleur}22;color:${s.couleur};border:1px solid ${s.couleur}44">${s.nom.split(' ').map(x=>x[0]).join('').slice(0,2)}</div><div class="stinfo"><div class="stname">${s.nom}</div><div class="strole">${s.role}</div></div><div class="stzone">${s.zone}</div><span style="font-size:11px;color:${sc[s.statut]};font-weight:600">${sl[s.statut]}</span></div>`).join('');
+  const days=['L','M','M','J','V','S','D'],ps=['🟢','🔵','⬜'];
+  document.getElementById('planningP').innerHTML=`<div style="display:flex;gap:5px;margin-bottom:5px;padding-left:88px">${days.map(d=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--glacier)">${d}</div>`).join('')}</div>`+S.staff.map(s=>`<div style="display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid rgba(94,184,255,.04);"><div style="width:88px;font-size:11px">${s.nom.split(' ')[0]}</div>${Array.from({length:7},()=>`<div style="flex:1;text-align:center;font-size:13px">${ps[Math.floor(Math.random()*3)]}</div>`).join('')}</div>`).join('')+`<div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--glacier)"><span>🟢 Matin</span><span>🔵 Après-midi</span><span>⬜ Repos</span></div>`;
+}
+
+// FINANCES
+function renderFinances(){
+  const res=S.finances.ca-S.finances.charges;
+  document.getElementById('finKpi').innerHTML=kpi('CA Saison',(S.finances.ca/1e6).toFixed(1),'M€','💰','Objectif +18%','up')+kpi('Charges',(S.finances.charges/1e6).toFixed(1),'M€','📉','Budget OK','nu')+kpi('Résultat Net',(res>=0?'+':'')+(res/1000).toFixed(0),'K€','✅',res>=0?'Bénéficiaire':'Déficit',res>=0?'up':'dn')+kpi('Forfaits',S.finances.forfaits.toLocaleString('fr-FR'),'/saison','🎫','Record','up');
+  const mr=Math.max(...S.finances.revenus.map(r=>r.val));
+  document.getElementById('finRev').innerHTML=S.finances.revenus.map(r=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>${r.label}</span><span style="color:var(--frost);font-family:monospace">${r.val.toLocaleString('fr-FR')}€</span></div><div class="pbar"><div class="pfill" style="width:${Math.round(r.val/mr*100)}%;background:linear-gradient(90deg,var(--azure),var(--frost))"></div></div></div>`).join('');
+  const mc=Math.max(...S.finances.chargesDetail.map(c=>c.val));
+  document.getElementById('finCh').innerHTML=S.finances.chargesDetail.map(c=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>${c.label}</span><span style="color:var(--warn);font-family:monospace">${c.val.toLocaleString('fr-FR')}€</span></div><div class="pbar"><div class="pfill" style="width:${Math.round(c.val/mc*100)}%;background:linear-gradient(90deg,rgba(255,77,77,.7),rgba(255,179,71,.7))"></div></div></div>`).join('');
+  const base=S.station.recettes,vs=[...Array(14)].map((_,i)=>i===13?base:Math.round(base*(0.6+Math.random()*.8))),fm=Math.max(...vs);
+  document.getElementById('finChart').innerHTML=vs.map((v,i)=>{const h=Math.round(v/fm*120),col=v>base*.9?'var(--go)':v>base*.7?'var(--frost)':'var(--azure)';return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;"><div style="width:100%;border-radius:2px 2px 0 0;height:${h}px;background:linear-gradient(180deg,${col},rgba(26,111,255,.3));min-height:3px;"></div><div style="font-size:8px;color:var(--glacier)">J-${13-i}</div></div>`;}).join('');
+}
+
+// MÉTÉO
+function renderMeteo(){
+  document.getElementById('metFc').innerHTML=S.meteo.previsions.map((p,i)=>`<div class="mday ${i===0?'today':''}"><div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--glacier)">${p.jour}</div><div style="font-size:26px;margin:7px 0">${p.ico}</div><div style="font-family:monospace;font-size:15px;font-weight:600;color:var(--frost)">${p.tempMax}°C</div><div style="font-size:11px;color:var(--glacier)">${p.tempMin}°C</div><div style="font-size:10px;color:#a8d8f0;margin-top:3px">${p.neige>0?'❄ +'+p.neige+'cm':'—'}</div></div>`).join('');
+  document.getElementById('metReal').innerHTML=srow('🌡️ Sommet',S.meteo.tempSommet+'°C')+srow('🌡️ Mi-station',Math.round((S.meteo.tempSommet+S.meteo.tempVillage)/2)+'°C')+srow('🌡️ Village',S.meteo.tempVillage+'°C')+srow('💨 Vent',S.meteo.vent+' km/h')+srow('🌫️ Visibilité',S.meteo.visibilite)+srow('❄️ Fraîche 48h','+'+S.meteo.neigeFraiche+'cm');
+  document.getElementById('metSnow').innerHTML=srow('❄️ Neige sommet','<span style="color:var(--frost)">'+S.meteo.neigeSommet+' cm</span>')+srow('❄️ Fraîche',`<span style="color:var(--go)">+${S.meteo.neigeFraiche} cm</span>`)+srow('🧊 Qualité',`<span style="color:var(--gold)">${S.meteo.qualiteNeige}</span>`)+srow('⚠️ Avalanche',`<span style="color:${S.meteo.avalanche<=2?'var(--go)':S.meteo.avalanche<=3?'var(--warn)':'var(--alert)'}">Niveau ${S.meteo.avalanche}/5</span>`)+srow('📅 Dameuse','Ce matin 06:30');
+}
+
+// ══════════════ ACTUALITÉS ══════════════
+const catLabel={evenement:'Événement',alerte:'Alerte',info:'Information',travaux:'Travaux',competition:'Compétition'};
+const catClass={evenement:'cat-evenement',alerte:'cat-alerte',info:'cat-info',travaux:'cat-travaux',competition:'cat-competition'};
+
+function renderActualites(){
+  const filter=document.getElementById('filterCat')?.value||'';
+  const arts=S.actualites.filter(a=>!filter||a.categorie===filter);
+  document.getElementById('kActTotal').textContent=S.actualites.length;
+  document.getElementById('kActPub').textContent=S.actualites.filter(a=>a.publie).length;
+  document.getElementById('kActDraft').textContent=S.actualites.filter(a=>!a.publie).length;
+  document.getElementById('kActMonth').textContent=S.actualites.length;
+  document.getElementById('actSub').textContent=S.actualites.length+' articles · '+S.actualites.filter(a=>a.publie).length+' publiés';
+
+  document.getElementById('actuGrid').innerHTML=arts.length?arts.map(a=>`
+    <div class="actu-card">
+      <div class="actu-header">
+        <div class="actu-cat ${catClass[a.categorie]||'cat-info'}">${a.categorie==='evenement'?'🎉':'ℹ️'} ${catLabel[a.categorie]||a.categorie}</div>
+        <div class="actu-title">${a.titre}</div>
+        <div class="actu-meta">📅 ${a.date} · ✍️ ${a.auteur}</div>
+      </div>
+      <div class="actu-body">${a.resume}</div>
+      <div class="actu-footer">
+        <span class="actu-pub ${a.publie?'pub':'draft'}">${a.publie?'● Publié':'◐ Brouillon'}</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-g btn-sm" onclick="openEditActu(${a.id})">✏️ Éditer</button>
+          <button class="btn btn-${a.publie?'g':'p'} btn-sm" onclick="toggleActuPub(${a.id})">${a.publie?'Dépublier':'Publier'}</button>
+          <button class="btn btn-d btn-sm" onclick="deleteActu(${a.id})">✕</button>
+        </div>
+      </div>
+    </div>`).join(''):
+    `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--glacier)">Aucun article dans cette catégorie</div>`;
+}
+
+function toggleActuPub(id){const a=S.actualites.find(x=>x.id===id);if(a){a.publie=!a.publie;saveState();renderActualites();toast(a.publie?'✅ Article publié':'📝 Article mis en brouillon',a.publie?'success':'warn');}}
+function deleteActu(id){if(!confirm('Supprimer cet article ?'))return;S.actualites=S.actualites.filter(a=>a.id!==id);saveState();renderActualites();toast('🗑️ Article supprimé','warn');}
+
+// ID de l'article en cours d'édition (null = création)
+let _actuEditId = null;
+
+function openNewActu(){
+  _actuEditId = null;
+  openModal('genericModal','Nouvel Article', actuForm(null));
+}
+function openEditActu(id){
+  _actuEditId = id;
+  const a=S.actualites.find(x=>x.id===id);
+  openModal('genericModal','Éditer l\'Article', actuForm(a));
+}
+
+function actuForm(a){
+  const isEdit=!!a;
+  return`
+    <div class="frow"><label class="flabel">Titre</label><input class="finput" id="afTitre" type="text" value="${a?a.titre.replace(/"/g,'&quot;'):''}" placeholder="Titre de l'article"></div>
+    <div class="frow-2">
+      <div class="frow"><label class="flabel">Catégorie</label>
+        <select class="finput" id="afCat">
+          <option value="evenement" ${a?.categorie==='evenement'?'selected':''}>🎉 Événement</option>
+          <option value="info" ${(!a||a?.categorie==='info')?'selected':''}>ℹ️ Information</option>
+          <option value="alerte" ${a?.categorie==='alerte'?'selected':''}>⚠️ Alerte</option>
+          <option value="travaux" ${a?.categorie==='travaux'?'selected':''}>🔧 Travaux</option>
+          <option value="competition" ${a?.categorie==='competition'?'selected':''}>🏆 Compétition</option>
+        </select>
+      </div>
+      <div class="frow"><label class="flabel">Auteur</label><input class="finput" id="afAuteur" type="text" value="${a?a.auteur:'Direction'}" placeholder="Auteur"></div>
+    </div>
+    <div class="frow"><label class="flabel">Résumé (affiché sur la carte)</label><textarea class="finput" id="afResume" rows="2">${a?a.resume:''}</textarea></div>
+    <div class="frow"><label class="flabel">Contenu complet</label><textarea class="finput" id="afContenu" rows="5">${a?a.contenu:''}</textarea></div>
+    <div class="frow-2">
+      <div class="frow"><label class="flabel">Date</label><input class="finput" id="afDate" type="text" value="${a?a.date:new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}"></div>
+      <div class="frow" style="display:flex;align-items:flex-end;gap:10px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:0;padding-bottom:8px">
+          <label class="tog" style="margin:0"><input type="checkbox" id="afPubOk" ${a?.publie?'checked':''}><div class="tslider"></div></label>
+          Publier maintenant
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-p" onclick="saveActu()" style="flex:1;justify-content:center;">💾 ${isEdit?'Enregistrer les modifications':'Créer l\'article'}</button>
+      <button class="btn btn-g" onclick="closeModal('genericModal')">Annuler</button>
+    </div>`;
+}
+
+function saveActu(){
+  const titre=document.getElementById('afTitre').value.trim();
+  if(!titre){toast('⚠️ Titre requis','warn');return;}
+  const data={
+    titre,
+    categorie:document.getElementById('afCat').value,
+    auteur:document.getElementById('afAuteur').value||'Direction',
+    resume:document.getElementById('afResume').value,
+    contenu:document.getElementById('afContenu').value,
+    date:document.getElementById('afDate').value,
+    publie:document.getElementById('afPubOk').checked
+  };
+  if(_actuEditId !== null){
+    const a=S.actualites.find(x=>x.id===_actuEditId);
+    if(a) Object.assign(a,data);
+    toast('✅ Article mis à jour','success');
+  } else {
+    S.actualites.unshift({id:nid++,...data});
+    toast('✅ Article créé','success');
+  }
+  saveState();
+  closeModal('genericModal');
+  renderActualites();
+}
+
+// ALERTES
+function renderAlertes(){
+  updateAlertBadge();
+  const act=S.alerts.filter(a=>a.active);
+  document.getElementById('activeAlerts').innerHTML=act.length?act.map(a=>`<div class="aitem"><div class="aico">${a.ico}</div><div style="flex:1"><div class="atxt">${a.txt}</div><div class="atime">${a.time}</div></div><button class="btn btn-g btn-sm" onclick="acquitAlert(${a.id})" style="flex-shrink:0">Acquitter</button></div>`).join(''):`<div style="color:var(--glacier);font-size:12px;padding:8px 0;">✅ Aucune alerte active</div>`;
+  document.getElementById('histAlerts').innerHTML=S.histAlerts.map(a=>`<div class="aitem"><div class="aico">${a.ico}</div><div><div class="atxt" style="color:var(--glacier)">${a.txt}</div><div class="atime">${a.time}</div></div></div>`).join('');
+}
+function acquitAlert(id){const a=S.alerts.find(x=>x.id===id);if(a){S.histAlerts.unshift({id:nid++,ico:'✅',txt:a.txt,time:'Résolu '+new Date().toLocaleTimeString('fr-FR').slice(0,5)});S.alerts=S.alerts.filter(x=>x.id!==id);saveState();renderAlertes();renderDashboard();toast('✅ Alerte acquittée','success');}}
+function acquitAll(){S.alerts.filter(a=>a.active).forEach(a=>S.histAlerts.unshift({id:nid++,ico:'✅',txt:a.txt,time:'Résolu'}));S.alerts=[];saveState();renderAlertes();renderDashboard();toast('✅ Toutes les alertes acquittées','success');}
+
+// ADMIN
+function toggleAdmin(){if(adminLoggedIn)logoutAdmin();else openModal('loginModal');}
+function doLogin(){const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;if(u==='vality'&&p==='1234'){adminLoggedIn=true;closeModal('loginModal');document.getElementById('adminBtn').classList.add('active');document.getElementById('adminBtn').innerHTML='🛡️ ADMIN ✓';document.getElementById('adminNav').style.display='block';showPage('admin');toast('🛡️ Bienvenue, Vality !','success');}else{document.getElementById('loginErr').style.display='block';document.getElementById('loginPass').value='';setTimeout(()=>document.getElementById('loginErr').style.display='none',3000);}}
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus();});
+function logoutAdmin(){adminLoggedIn=false;document.getElementById('adminBtn').classList.remove('active');document.getElementById('adminBtn').innerHTML='⚙️ ADMIN';document.getElementById('adminNav').style.display='none';showPage('dashboard');toast('🔒 Session admin fermée','warn');}
+
+function renderAdmin(){
+  if(!adminLoggedIn){showPage('dashboard');return;}
+  // Station
+  ['aStaNom','aStaAlt','aStaCap','aVis','aRec','aSat'].forEach((id,i)=>{const v=[S.station.nom,S.station.alt,S.station.cap,S.station.visiteurs,S.station.recettes,S.station.satisf][i];const el=document.getElementById(id);if(el)el.value=v;});
+  document.getElementById('aTarAdulte').value=S.station.tarifs?.adulte||42;
+  document.getElementById('aTarEnfant').value=S.station.tarifs?.enfant||28;
+  document.getElementById('aTarSemA').value=S.station.tarifs?.semA||210;
+  document.getElementById('aTarSemE').value=S.station.tarifs?.semE||148;
+  // Meteo
+  document.getElementById('aTVil').value=S.meteo.tempVillage;document.getElementById('aTSom').value=S.meteo.tempSommet;document.getElementById('aVent').value=S.meteo.vent;document.getElementById('aNFr').value=S.meteo.neigeFraiche;document.getElementById('aNSom').value=S.meteo.neigeSommet;document.getElementById('aAval').value=S.meteo.avalanche;document.getElementById('aQual').value=S.meteo.qualiteNeige;document.getElementById('aVis2').value=S.meteo.visibilite;
+  document.getElementById('aMeteoRows').innerHTML=S.meteo.previsions.map((p,i)=>`<div class="frow-3" style="margin-bottom:8px;"><input class="finput" value="${p.jour}" onchange="S.meteo.previsions[${i}].jour=this.value"><div style="display:flex;gap:5px;"><input class="finput" type="number" value="${p.tempMax}" style="width:50%" onchange="S.meteo.previsions[${i}].tempMax=+this.value"><input class="finput" type="number" value="${p.tempMin}" style="width:50%" onchange="S.meteo.previsions[${i}].tempMin=+this.value"></div><div style="display:flex;gap:5px;"><input class="finput" value="${p.ico}" style="width:52px" onchange="S.meteo.previsions[${i}].ico=this.value"><input class="finput" type="number" value="${p.neige}" onchange="S.meteo.previsions[${i}].neige=+this.value" placeholder="cm"></div></div>`).join('');
+  // Pistes
+  document.getElementById('aPiRows').innerHTML=S.pistes.map(p=>`<div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;background:rgba(94,184,255,.04);border:1px solid var(--border);border-radius:8px;padding:9px;"><span class="dd" style="background:${DC[p.diff]};flex-shrink:0"></span><input class="finput" value="${p.nom}" style="flex:1.5" onchange="S.pistes.find(x=>x.id===${p.id}).nom=this.value"><select class="finput" style="width:85px" onchange="S.pistes.find(x=>x.id===${p.id}).diff=this.value">${['verte','bleue','rouge','noire'].map(d=>`<option value="${d}" ${p.diff===d?'selected':''}>${DL[d]}</option>`).join('')}</select><input class="finput" value="${p.long}" style="width:70px" onchange="S.pistes.find(x=>x.id===${p.id}).long=this.value"><input class="finput" value="${p.den}" style="width:65px" onchange="S.pistes.find(x=>x.id===${p.id}).den=this.value"><input class="finput" type="number" value="${p.neige}" style="width:65px" onchange="S.pistes.find(x=>x.id===${p.id}).neige=+this.value"><label class="tog"><input type="checkbox" ${p.open?'checked':''} onchange="S.pistes.find(x=>x.id===${p.id}).open=this.checked;saveState();renderPistes();"><div class="tslider"></div></label><button class="btn btn-d btn-sm" onclick="if(confirm('Supprimer ?')){S.pistes=S.pistes.filter(x=>x.id!==${p.id});saveState();renderAdmin();toast('Supprimé','warn');}">✕</button></div>`).join('');
+  // Remontées
+  document.getElementById('aRemRows').innerHTML=S.remontees.map(r=>`<div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;background:rgba(94,184,255,.04);border:1px solid var(--border);border-radius:8px;padding:9px;"><input class="finput" value="${r.nom}" style="flex:2" onchange="S.remontees.find(x=>x.id===${r.id}).nom=this.value"><select class="finput" style="width:105px" onchange="S.remontees.find(x=>x.id===${r.id}).type=this.value">${['télécabine','télésiège','téleski'].map(t=>`<option value="${t}" ${r.type===t?'selected':''}>${t}</option>`).join('')}</select><input class="finput" type="number" value="${r.places}" style="width:55px" onchange="S.remontees.find(x=>x.id===${r.id}).places=+this.value"><input class="finput" type="number" value="${r.capa}" style="width:70px" onchange="S.remontees.find(x=>x.id===${r.id}).capa=+this.value"><input class="finput" value="${r.note}" style="width:85px" onchange="S.remontees.find(x=>x.id===${r.id}).note=this.value" placeholder="Note"><label class="tog"><input type="checkbox" ${r.open?'checked':''} onchange="S.remontees.find(x=>x.id===${r.id}).open=this.checked;saveState();"><div class="tslider"></div></label><button class="btn btn-d btn-sm" onclick="if(confirm('Supprimer ?')){S.remontees=S.remontees.filter(x=>x.id!==${r.id});saveState();renderAdmin();toast('Supprimé','warn');}">✕</button></div>`).join('');
+  // Canons
+  document.getElementById('aCanRows').innerHTML=S.canons.map((c,i)=>`<div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;background:rgba(94,184,255,.04);border:1px solid var(--border);border-radius:8px;padding:9px;"><input class="finput" value="${c.id}" style="width:65px" onchange="S.canons[${i}].id=this.value"><input class="finput" value="${c.zone}" style="flex:1" onchange="S.canons[${i}].zone=this.value"><label class="tog"><input type="checkbox" ${c.on?'checked':''} onchange="S.canons[${i}].on=this.checked"><div class="tslider"></div></label><button class="btn btn-d btn-sm" onclick="S.canons.splice(${i},1);saveState();renderAdmin();toast('Supprimé','warn');">✕</button></div>`).join('');
+  // Staff
+  document.getElementById('aStaRows').innerHTML=S.staff.map(s=>`<div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;background:rgba(94,184,255,.04);border:1px solid var(--border);border-radius:8px;padding:9px;"><input type="color" value="${s.couleur}" onchange="S.staff.find(x=>x.id===${s.id}).couleur=this.value"><input class="finput" value="${s.nom}" style="flex:1.2" onchange="S.staff.find(x=>x.id===${s.id}).nom=this.value"><input class="finput" value="${s.role}" style="flex:1.5" onchange="S.staff.find(x=>x.id===${s.id}).role=this.value"><input class="finput" value="${s.zone}" style="flex:1" onchange="S.staff.find(x=>x.id===${s.id}).zone=this.value"><select class="finput" style="width:105px" onchange="S.staff.find(x=>x.id===${s.id}).statut=this.value">${['present','intervention','repos'].map(o=>`<option value="${o}" ${s.statut===o?'selected':''}>${o}</option>`).join('')}</select><button class="btn btn-d btn-sm" onclick="if(confirm('Supprimer ?')){S.staff=S.staff.filter(x=>x.id!==${s.id});saveState();renderAdmin();toast('Supprimé','warn');}">✕</button></div>`).join('');
+  // Finances
+  document.getElementById('aCA').value=S.finances.ca;document.getElementById('aCH').value=S.finances.charges;document.getElementById('aForf').value=S.finances.forfaits;
+  // Alertes
+  document.getElementById('aAlRows').innerHTML=S.alerts.map(a=>`<div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;background:rgba(94,184,255,.04);border:1px solid var(--border);border-radius:8px;padding:9px;"><span style="font-size:16px">${a.ico}</span><input class="finput" value="${a.txt}" style="flex:1" onchange="S.alerts.find(x=>x.id===${a.id}).txt=this.value"><input class="finput" value="${a.time}" style="width:110px" onchange="S.alerts.find(x=>x.id===${a.id}).time=this.value"><button class="btn btn-d btn-sm" onclick="S.alerts=S.alerts.filter(x=>x.id!==${a.id});saveState();renderAdmin();updateAlertBadge();toast('Supprimé','warn');">✕</button></div>`).join('')||`<div style="color:var(--glacier);font-size:12px;padding:8px">Aucune alerte</div>`;
+}
+
+function saveStation(){S.station.nom=document.getElementById('aStaNom').value;S.station.alt=+document.getElementById('aStaAlt').value;S.station.cap=+document.getElementById('aStaCap').value;S.station.visiteurs=+document.getElementById('aVis').value;S.station.recettes=+document.getElementById('aRec').value;S.station.satisf=Math.min(100,Math.max(0,+document.getElementById('aSat').value));if(!S.station.tarifs)S.station.tarifs={};S.station.tarifs.adulte=+document.getElementById('aTarAdulte').value;S.station.tarifs.enfant=+document.getElementById('aTarEnfant').value;S.station.tarifs.semA=+document.getElementById('aTarSemA').value;S.station.tarifs.semE=+document.getElementById('aTarSemE').value;saveState();renderDashboard();updateHeader();toast('💾 Station sauvegardée','success');}
+function saveMeteo(){S.meteo.tempVillage=+document.getElementById('aTVil').value;S.meteo.tempSommet=+document.getElementById('aTSom').value;S.meteo.vent=+document.getElementById('aVent').value;S.meteo.neigeFraiche=+document.getElementById('aNFr').value;S.meteo.neigeSommet=+document.getElementById('aNSom').value;S.meteo.avalanche=+document.getElementById('aAval').value;S.meteo.qualiteNeige=document.getElementById('aQual').value;S.meteo.visibilite=document.getElementById('aVis2').value;saveState();updateHeader();toast('🌡️ Météo sauvegardée','success');}
+function saveFinances(){S.finances.ca=+document.getElementById('aCA').value;S.finances.charges=+document.getElementById('aCH').value;S.finances.forfaits=+document.getElementById('aForf').value;saveState();toast('💰 Finances sauvegardées','success');}
+function addAlert(){const ico=document.getElementById('aAlType').value,txt=document.getElementById('aAlTxt').value.trim();if(!txt){toast('⚠️ Texte requis','warn');return;}S.alerts.push({id:nid++,ico,txt,time:'À l\'instant',active:true});document.getElementById('aAlTxt').value='';saveState();renderAdmin();updateAlertBadge();toast('🚨 Alerte créée','success');}
+
+// ADD HELPERS
+function openAddPiste(){openModal('genericModal','Ajouter une Piste',`<div class="frow"><label class="flabel">Nom</label><input class="finput" id="npN" type="text" placeholder="Nom de la piste"></div><div class="frow-2"><div class="frow"><label class="flabel">Difficulté</label><select class="finput" id="npD"><option value="verte">Verte</option><option value="bleue">Bleue</option><option value="rouge">Rouge</option><option value="noire">Noire</option></select></div><div class="frow"><label class="flabel">Neige (cm)</label><input class="finput" id="npE" type="number" value="80"></div></div><div class="frow-2"><div class="frow"><label class="flabel">Longueur</label><input class="finput" id="npL" type="text" placeholder="2.5 km"></div><div class="frow"><label class="flabel">Dénivelé</label><input class="finput" id="npDn" type="text" placeholder="400m"></div></div><div style="display:flex;gap:8px;margin-top:8px;"><button class="btn btn-p" onclick="const n=document.getElementById('npN').value.trim();if(!n){toast('Nom requis','warn');return;}S.pistes.push({id:nid++,nom:n,diff:document.getElementById('npD').value,long:document.getElementById('npL').value||'—',den:document.getElementById('npDn').value||'—',neige:+document.getElementById('npE').value||80,open:true});saveState();closeModal('genericModal');renderAdmin();renderPistes();toast('✅ Piste ajoutée','success');">Ajouter</button><button class="btn btn-g" onclick="closeModal('genericModal')">Annuler</button></div>`);}
+function openAddRem(){openModal('genericModal','Ajouter une Remontée',`<div class="frow"><label class="flabel">Nom</label><input class="finput" id="nrN" type="text"></div><div class="frow-2"><div class="frow"><label class="flabel">Type</label><select class="finput" id="nrT"><option value="télécabine">Télécabine</option><option value="télésiège">Télésiège</option><option value="téleski">Téleski</option></select></div><div class="frow"><label class="flabel">Places</label><input class="finput" id="nrP" type="number" value="6"></div></div><div class="frow-2"><div class="frow"><label class="flabel">Capa. pers/h</label><input class="finput" id="nrC" type="number" value="1800"></div><div class="frow"><label class="flabel">Vitesse m/s</label><input class="finput" id="nrV" type="number" value="4" step="0.5"></div></div><div style="display:flex;gap:8px;margin-top:8px;"><button class="btn btn-p" onclick="const n=document.getElementById('nrN').value.trim();if(!n){toast('Nom requis','warn');return;}S.remontees.push({id:nid++,nom:n,type:document.getElementById('nrT').value,places:+document.getElementById('nrP').value,vitesse:+document.getElementById('nrV').value,capa:+document.getElementById('nrC').value,open:true,note:''});saveState();closeModal('genericModal');renderAdmin();toast('✅ Remontée ajoutée','success');">Ajouter</button><button class="btn btn-g" onclick="closeModal('genericModal')">Annuler</button></div>`);}
+function openAddCanon(){openModal('genericModal','Ajouter un Canon',`<div class="frow-2"><div class="frow"><label class="flabel">ID</label><input class="finput" id="ncI" placeholder="C-17"></div><div class="frow"><label class="flabel">Zone</label><input class="finput" id="ncZ" placeholder="Zone"></div></div><div style="display:flex;gap:8px;margin-top:8px;"><button class="btn btn-p" onclick="S.canons.push({id:document.getElementById('ncI').value||'C-XX',zone:document.getElementById('ncZ').value||'Zone',on:false});saveState();closeModal('genericModal');renderAdmin();toast('✅ Canon ajouté','success');">Ajouter</button><button class="btn btn-g" onclick="closeModal('genericModal')">Annuler</button></div>`);}
+function openAddStaff(){openModal('genericModal','Ajouter un Employé',`<div class="frow"><label class="flabel">Nom complet</label><input class="finput" id="nsN" placeholder="Prénom Nom"></div><div class="frow"><label class="flabel">Rôle</label><input class="finput" id="nsR" placeholder="Moniteur ESF"></div><div class="frow-2"><div class="frow"><label class="flabel">Zone</label><input class="finput" id="nsZ" placeholder="Secteur"></div><div class="frow"><label class="flabel">Statut</label><select class="finput" id="nsSt"><option value="present">En poste</option><option value="intervention">Intervention</option><option value="repos">Repos</option></select></div></div><div class="frow"><label class="flabel">Couleur avatar</label><input type="color" id="nsC" value="#5eb8ff"></div><div style="display:flex;gap:8px;margin-top:8px;"><button class="btn btn-p" onclick="const n=document.getElementById('nsN').value.trim();if(!n){toast('Nom requis','warn');return;}S.staff.push({id:nid++,nom:n,role:document.getElementById('nsR').value||'Employé',zone:document.getElementById('nsZ').value||'—',statut:document.getElementById('nsSt').value,couleur:document.getElementById('nsC').value});saveState();closeModal('genericModal');renderAdmin();toast('✅ Employé ajouté','success');">Ajouter</button><button class="btn btn-g" onclick="closeModal('genericModal')">Annuler</button></div>`);}
+
+// MODAL
+function openModal(id,t,b){if(id==='genericModal'&&t){document.getElementById('modalTitle').textContent=t;document.getElementById('modalBody').innerHTML=b||'';}document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)closeModal(el.id);});});
+
+// TOAST
+function toast(msg,type='success'){const t=document.createElement('div');t.className='toast '+(type||'success');const i=type==='success'?'✅':type==='error'?'❌':'⚠️';t.innerHTML=`<span>${i}</span><span>${msg}</span>`;document.getElementById('toasts').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='all .3s';setTimeout(()=>t.remove(),300);},3500);}
+
+// BOOT
+loadState();
+renderAll();
+setInterval(()=>{if(document.querySelector('#page-dashboard.active'))renderDashboard();},30000);
+</script>
+</body>
+</html>
